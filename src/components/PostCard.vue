@@ -1,13 +1,13 @@
 <template>
     <div class="post-card glass-panel" @click="$router.push(`/post/${post.id}`)">
-        <div class="card-image" :style="{ backgroundImage: `url(${post.cover})` }"></div>
+        <div class="card-image" :style="{ backgroundImage: `url(${post.image})` }"></div>
         <div class="card-content">
             <div class="meta">
                 <el-tag size="small" effect="dark" type="info">{{ post.category }}</el-tag>
-                <span class="date">{{ post.date }}</span>
+                <span class="date">{{ post.publishTime }}</span>
             </div>
             <h3>{{ post.title }}</h3>
-            <p>{{ post.summary }}</p>
+            <p>{{ post.introduction }}</p>
             <div class="footer">
                 <el-button link type="primary">阅读全文 <el-icon><ArrowRight /></el-icon></el-button>
             </div>
@@ -20,10 +20,10 @@
 interface Post {
     id: number;
     title: string;
-    summary: string;
-    date: string;
+    introduction: string;
+    publishTime: string;
     category: string;
-    cover: string;
+    image: string;
 }
 
 defineProps<{ post: Post }>()
