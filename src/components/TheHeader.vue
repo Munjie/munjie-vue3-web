@@ -111,6 +111,7 @@ import {ref, watch, nextTick} from 'vue'
 import {useRoute} from 'vue-router'
 import { Search, Menu, Moon, CloseBold } from '@element-plus/icons-vue'
 import {ElInput} from 'element-plus';
+import router from "../router";
 
 const drawer = ref(false)
 const route = useRoute()
@@ -129,9 +130,50 @@ watch(searchVisible, (newVal) => {
         })
     }
 })
+// 桌面搜索逻辑 (修改)
+const handleSearch = () => {
+    if (searchText.value.trim()) {
+        // 关键步骤：执行路由跳转，设置 keyword 参数，并强制 page=1
+        router.push({
+            path: '/',
+            query: {
+                keyword: searchText.value.trim(),
+                page: '1'
+            }
+        })
+
+        // 搜索完成后关闭 Popover
+        searchVisible.value = false
+    } else {
+        // 如果清空搜索，也应该清除路由中的 keyword 参数
+        router.push({ path: '/', query: { page: '1' } })
+    }
+    searchText.value = '' // 清空输入框
+}
+
+// 移动端搜索逻辑 (修改)
+const handleMobileSearch = () => {
+    if (searchText.value.trim()) {
+        // 关键步骤：执行路由跳转，设置 keyword 参数，并强制 page=1
+        router.push({
+            path: '/',
+            query: {
+                keyword: searchText.value.trim(),
+                page: '1'
+            }
+        })
+
+        // 搜索完成后关闭搜索栏
+        isMobileSearchActive.value = false
+    } else {
+        // 如果清空搜索，也应该清除路由中的 keyword 参数
+        router.push({ path: '/', query: { page: '1' } })
+    }
+    searchText.value = '' // 清空输入框
+}
 
 // 处理搜索逻辑
-const handleSearch = () => {
+/*const handleSearch = () => {
     if (searchText.value.trim()) {
         console.log('执行搜索:', searchText.value)
 
@@ -141,7 +183,7 @@ const handleSearch = () => {
         // 搜索完成后关闭 Popover
         searchVisible.value = false
     }
-}
+}*/
 // 搜索 Popover 状态 (桌面)
 // 新增：移动端搜索状态
 const isMobileSearchActive = ref(false)
@@ -158,7 +200,7 @@ const toggleMobileSearch = () => {
 }
 
 // 移动端搜索逻辑
-const handleMobileSearch = () => {
+/*const handleMobileSearch = () => {
     if (searchText.value.trim()) {
         console.log('执行移动端搜索:', searchText.value)
         // 执行搜索路由跳转
@@ -166,7 +208,7 @@ const handleMobileSearch = () => {
         isMobileSearchActive.value = false
         searchText.value = ''
     }
-}
+}*/
 const menuLinks = [
     {name: '首页', path: '/'},
     {name: '技术', path: '/tech'},

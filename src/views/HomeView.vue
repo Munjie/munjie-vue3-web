@@ -52,6 +52,12 @@ const pageSize = ref(6) // 每页显示 6 篇文章
 const totalPosts = ref(0)
 const loading = ref(false)
 
+// --- 新增：从路由中获取搜索关键词 ---
+const currentKeyword = computed<string>(() => {
+    // 如果路由中有 keyword 参数，则使用它，否则为空字符串
+    return route.query.keyword ? String(route.query.keyword) : ''
+})
+
 // --- 计算属性：与路由同步的当前页码 ---
 const currentPage = computed<number>({
     get: () => {
@@ -65,15 +71,15 @@ const currentPage = computed<number>({
     }
 })
 // --- 数据请求函数 ---
-const fetchPosts = async (page: number, size: number) => {
-    debugger
+const fetchPosts = async (page: number, size: number,keyword: string) => {
     loading.value = true
     ALL_POSTS.value = [] // 清空列表，显示 Loading
     try {
 
         let pageForm = {
             pageSize: size,
-            pageNum: page
+            pageNum: page,
+            content: keyword,
         }
         const response = await pageHomeArticle(pageForm);
         ALL_POSTS.value = response.data.records,
@@ -95,7 +101,7 @@ const handleCurrentChange = (val: number) => {
     window.scrollTo({ top: 300, behavior: 'smooth' })
 }
 
-// 1. 组件挂载时，加载第一页数据
+/*// 1. 组件挂载时，加载第一页数据
 onMounted(() => {
     fetchPosts(currentPage.value, pageSize.value)
 })
@@ -103,6 +109,17 @@ onMounted(() => {
 // 2. 监听 currentPage 变化，重新请求数据
 watch(currentPage, (newPage) => {
     fetchPosts(newPage, pageSize.value)
+})*/
+// 1. 组件挂载时，加载数据
+onMounted(() => {
+    // 首次加载时，使用当前路由中的 keyword
+    fetchPosts(currentPage.value, pageSize.value, currentKeyword.value)
+})
+
+// 2. 监听 currentPage 或 currentKeyword 变化，重新请求数据
+watch([currentPage, currentKeyword], ([newPage, newKeyword]) => {
+    // 当 keyword 变化时，currentPage 可能会被重置为 1，但监听器会捕获最新的值
+    fetchPosts(newPage as number, pageSize.value, newKeyword as string)
 })
 </script>
 
