@@ -6,4 +6,5 @@ export interface ArticleVO {
     publishTime: string        // 你已经决定用 string
     category: string
     image: string
+    content: string
 }

@@ -1,6 +1,6 @@
 <template>
     <div class="post-detail" v-if="post">
-        <div class="post-hero" :style="{ backgroundImage: `url(${post.cover})` }">
+        <div class="post-hero" :style="{ backgroundImage: `url(${post.image})` }">
             <div class="hero-overlay">
                 <div class="container">
                     <el-breadcrumb separator="/" class="custom-breadcrumb">
@@ -9,7 +9,7 @@
                     </el-breadcrumb>
                     <h1 class="post-title">{{ post.title }}</h1>
                     <div class="post-meta">
-                        <span><el-icon><Calendar /></el-icon> {{ post.date }}</span>
+                        <span><el-icon><Calendar /></el-icon> {{ post.publishTime }}</span>
                         <span><el-icon><View /></el-icon> 2.4k 阅读</span>
                         <el-tag size="small" effect="plain">{{ post.category }}</el-tag>
                     </div>
@@ -47,14 +47,22 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
+import {getArticleById} from "../api/home.ts";
+import type {ArticleVO} from "../types/article.ts";
+import router from "../router";
 
 const route = useRoute()
-const post = ref<any>(null)
+const post = ref<ArticleVO>()
 
 // 模拟获取数据
-onMounted(() => {
-    const postId = route.params.id
-    // 实际开发中此处应为 API 请求
+onMounted(async () => {
+    const postId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
+    if (!postId) {
+        await router.push('/404')
+    }
+    post.value = await getArticleById(postId)
+
+/*    // 实际开发中此处应为 API 请求
     post.value = {
         id: postId,
         title: 'Vue 3 Composition API 深度解析',
@@ -90,7 +98,7 @@ export function useMouse() {
 2. **光影效果**：利用 \`box-shadow\` 模拟紫色或蓝色的微光。
 3. **字体**：推荐使用 Inter 或 PingFang SC。
     `
-    }
+    }*/
 })
 </script>
 

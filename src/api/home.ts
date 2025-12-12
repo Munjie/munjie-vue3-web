@@ -1,5 +1,5 @@
 import http from './http.ts';
-
+import type {ArticleVO} from "../types/article.ts";
 
 export const pageHomeArticle = (data?: object) => {
     return http.post(
@@ -12,4 +12,12 @@ export const pageHomeArticle = (data?: object) => {
 
 
 
-
+export const getArticleById = async (id: string| undefined): Promise<ArticleVO> => {
+    try {
+        const response = await http.get(`/api/article/get-article-by-id/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
