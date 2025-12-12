@@ -40,3 +40,45 @@ body {
   border: 1px solid var(--glass-border);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
+
+
+
+// ------------------------------------
+// 高级搜索面板样式 (PopOver)
+// ------------------------------------
+.premium-search-popover {
+  // 基础暗黑风格：深色背景，微妙的边框
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  padding: 15px !important;
+  // 阴影：营造高级的漂浮感和微弱的光晕
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 10px rgba(99, 102, 241, 0.2) !important;
+
+  // 箭头颜色修正，匹配 Popover 背景
+  .el-popper__arrow::before {
+    background: var(--bg-secondary) !important;
+    border-color: var(--glass-border) !important;
+  }
+
+  // 搜索输入框美化
+  .el-input__wrapper {
+    // 比 Popover 容器略深的背景
+    background-color: #1a1a1a !important;
+    box-shadow: none !important;
+    border: 1px solid var(--glass-border);
+    transition: border-color 0.3s;
+
+    // 聚焦时强调色
+    &:focus-within {
+      border-color: var(--accent-color) !important;
+    }
+  }
+
+  // 搜索按钮美化
+  .el-input-group__append {
+    background-color: var(--accent-color) !important;
+    color: #fff !important;
+    border: none !important;
+  }
+}
