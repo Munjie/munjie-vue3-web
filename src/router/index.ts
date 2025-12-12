@@ -10,7 +10,11 @@ const router = createRouter({
             name: 'home',
             component: HomeView
         },
-        // 其他路由可后续添加
+        {
+            path: '/post/:id',
+            name: 'post-detail',
+            component: () => import('../views/PostDetailView.vue')
+        }
     ],
     scrollBehavior() {
         return { top: 0 }

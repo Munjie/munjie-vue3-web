@@ -1,5 +1,5 @@
 <template>
-    <div class="post-card glass-panel">
+    <div class="post-card glass-panel" @click="$router.push(`/post/${post.id}`)">
         <div class="card-image" :style="{ backgroundImage: `url(${post.cover})` }"></div>
         <div class="card-content">
             <div class="meta">
@@ -31,6 +31,7 @@ defineProps<{ post: Post }>()
 
 <style scoped lang="scss">
 .post-card {
+    cursor: pointer;
   border-radius: 16px;
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -38,7 +39,8 @@ defineProps<{ post: Post }>()
   display: flex;
   flex-direction: column;
 
-  &:hover {
+
+    &:hover {
     transform: translateY(-5px);
     box-shadow: 0 12px 40px rgba(99, 102, 241, 0.15); // 紫色光晕
     border-color: rgba(99, 102, 241, 0.3);
