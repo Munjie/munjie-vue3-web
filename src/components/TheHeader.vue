@@ -11,33 +11,35 @@
 
                 <nav class="desktop-nav">
                     <el-popover
-                        :visible="searchVisible"
-                        placement="bottom-start"
-                        trigger="click"
-                        :width="350"
-                        popper-class="premium-search-popover"
-                        :teleported="true"
+                            :visible="searchVisible"
+                            placement="bottom-start"
+                            trigger="click"
+                            :width="350"
+                            popper-class="premium-search-popover"
+                            :teleported="true"
                     >
                         <template #reference>
                             <div
-                                class="search-trigger-icon"
-                                @click="searchVisible = !searchVisible"
+                                    class="search-trigger-icon"
+                                    @click="searchVisible = !searchVisible"
                             >
-                                <el-icon :size="20"><Search /></el-icon>
+                                <el-icon :size="20">
+                                    <Search/>
+                                </el-icon>
                             </div>
                         </template>
 
                         <div class="search-panel-content">
                             <el-input
-                                v-model="searchText"
-                                placeholder="输入关键词..."
-                                size="large"
-                                clearable
-                                @keyup.enter="handleSearch"
-                                ref="searchInputRef"
+                                    v-model="searchText"
+                                    placeholder="输入关键词..."
+                                    size="large"
+                                    clearable
+                                    @keyup.enter="handleSearch"
+                                    ref="searchInputRef"
                             >
                                 <template #append>
-                                    <el-button :icon="Search" @click="handleSearch" />
+                                    <el-button :icon="Search" @click="handleSearch"/>
                                 </template>
                             </el-input>
                             <p class="search-hint">按 Enter 键搜索，或点击按钮</p>
@@ -50,41 +52,65 @@
                     <router-link to="/about">关于</router-link>
                 </nav>
 
+            </div>
+            <div class="mobile-actions">
+                <div class="mobile-search-icon" @click="toggleMobileSearch">
+                    <el-icon :size="22"><Search /></el-icon>
+                </div>
                 <div class="mobile-menu-btn" @click="drawer = true">
                     <el-icon :size="24">
                         <Menu/>
                     </el-icon>
                 </div>
-            </div>
-            <el-drawer
-                    v-model="drawer"
-                    direction="rtl"
-                    size="30%"
-                    :append-to-body="true"
-                    :z-index="3000"
-                    class="mobile-drawer"
-            >
-                <template #header>
-                    <span class="drawer-title">MENU</span>
-                </template>
+                <el-drawer
+                        v-model="drawer"
+                        direction="rtl"
+                        size="30%"
+                        :append-to-body="true"
+                        :z-index="3000"
+                        class="mobile-drawer"
+                >
+                    <template #header>
+                        <span class="drawer-title">MENU</span>
+                    </template>
 
-                <nav class="mobile-nav">
-                    <div v-for="link in menuLinks" :key="link.path" class="mobile-nav-item">
-                        <router-link :to="link.path" @click="drawer = false">
-                            {{ link.name }}
-                        </router-link>
-                    </div>
-                </nav>
-            </el-drawer>
+                    <nav class="mobile-nav">
+                        <div v-for="link in menuLinks" :key="link.path" class="mobile-nav-item">
+                            <router-link :to="link.path" @click="drawer = false">
+                                {{ link.name }}
+                            </router-link>
+                        </div>
+                    </nav>
+                </el-drawer>
+            </div>
         </div>
+        <transition name="slide-down">
+            <div v-if="isMobileSearchActive" class="mobile-search-bar glass-panel">
+                <el-input
+                    v-model="searchText"
+                    placeholder="搜索文章、技术..."
+                    size="large"
+                    clearable
+                    @keyup.enter="handleMobileSearch"
+                    ref="mobileSearchInputRef"
+                >
+                    <template #append>
+                        <el-button :icon="Search" @click="handleMobileSearch" />
+                    </template>
+                </el-input>
+                <el-icon class="close-mobile-search" @click="isMobileSearchActive = false">
+                    <CloseBold />
+                </el-icon>
+            </div>
+        </transition>
     </header>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
-import { Search, Menu, Moon } from '@element-plus/icons-vue' // 确保引入 Search 图标
-import { ElInput } from 'element-plus';
+import {ref, watch, nextTick} from 'vue'
+import {useRoute} from 'vue-router'
+import { Search, Menu, Moon, CloseBold } from '@element-plus/icons-vue'
+import {ElInput} from 'element-plus';
 
 const drawer = ref(false)
 const route = useRoute()
@@ -108,12 +134,37 @@ watch(searchVisible, (newVal) => {
 const handleSearch = () => {
     if (searchText.value.trim()) {
         console.log('执行搜索:', searchText.value)
-        // 实际应用中：
+
         // 1. router.push({ path: '/search', query: { q: searchText.value } })
         // 2. 清空 searchText.value
 
         // 搜索完成后关闭 Popover
         searchVisible.value = false
+    }
+}
+// 搜索 Popover 状态 (桌面)
+// 新增：移动端搜索状态
+const isMobileSearchActive = ref(false)
+const mobileSearchInputRef = ref<InstanceType<typeof ElInput> | null>(null);
+
+// 切换移动端搜索状态并聚焦
+const toggleMobileSearch = () => {
+    isMobileSearchActive.value = !isMobileSearchActive.value
+    if (isMobileSearchActive.value) {
+        nextTick(() => {
+            mobileSearchInputRef.value?.focus()
+        })
+    }
+}
+
+// 移动端搜索逻辑
+const handleMobileSearch = () => {
+    if (searchText.value.trim()) {
+        console.log('执行移动端搜索:', searchText.value)
+        // 执行搜索路由跳转
+        // 搜索完成后关闭搜索栏
+        isMobileSearchActive.value = false
+        searchText.value = ''
     }
 }
 const menuLinks = [
@@ -216,61 +267,145 @@ watch(
     padding-bottom: 10px;
   }
 }
+
 //
 .actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 .desktop-nav {
-    // 确保所有导航项（包括搜索图标）垂直居中对齐
-    display: flex;
-    align-items: center;
-    gap: 40px;
+  // 确保所有导航项（包括搜索图标）垂直居中对齐
+  display: flex;
+  align-items: center;
+  gap: 40px;
 
-    @media (max-width: 768px) {
-        display: none;
-    }
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .search-trigger-icon {
-    // 搜索图标样式，使其看起来像一个导航链接
-    display: flex;
-    align-items: center;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: color 0.3s;
+  // 搜索图标样式，使其看起来像一个导航链接
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.3s;
 
-    &:hover {
-        color: var(--accent-color);
-    }
+  &:hover {
+    color: var(--accent-color);
+  }
 }
 
 .search-panel-content {
-    padding: 5px 0 0;
+  padding: 5px 0 0;
 }
 
 .search-hint {
-    margin-top: 10px;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    text-align: center;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
 }
 
 // 保持移动端菜单按钮的可见性
 .mobile-menu-btn {
-    display: block;
+  display: block;
+  cursor: pointer;
+  color: var(--text-primary);
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+}
+
+.mobile-actions {
+    display: none; /* 桌面端隐藏 */
+    align-items: center;
+    gap: 20px;
+
+    @media (max-width: 768px) {
+        display: flex; /* 移动端显示 */
+        // 当移动搜索激活时，隐藏所有图标，由 JS 控制，但 CSS 也可以辅助
+        &.hidden {
+            visibility: hidden;
+            opacity: 0;
+        }
+    }
+}
+
+.mobile-search-icon, .mobile-menu-btn {
     cursor: pointer;
     color: var(--text-primary);
+    transition: color 0.3s;
+    &:hover { color: var(--accent-color); }
+}
 
-    @media (min-width: 768px) {
+// =======================
+// 移动端全宽搜索栏样式 (新增)
+// =======================
+.mobile-search-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--header-height);
+    padding: 0 20px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    z-index: 90; // 略低于 drawer (z-index: 100)
+
+    // 继承玻璃面板样式，使其高级
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+
+    .close-mobile-search {
+        cursor: pointer;
+        margin-left: 15px;
+        font-size: 1.4rem;
+        color: var(--text-secondary);
+    }
+
+    // 覆盖输入框样式使其更高级
+    :deep(.el-input__wrapper) {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        box-shadow: none !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: border-color 0.3s;
+
+        &:focus-within {
+            border-color: var(--accent-color) !important;
+        }
+    }
+
+    // 覆盖搜索按钮样式
+    :deep(.el-input-group__append) {
+        background-color: var(--accent-color) !important;
+        color: #fff !important;
+        border: none !important;
+    }
+
+    // 确保它只在小屏幕上生效，大屏幕时隐藏
+    @media (min-width: 769px) {
         display: none;
     }
 }
 
-// 隐藏移动端搜索图标（因为我们只在桌面使用 Popover）
-.mobile-search-icon {
-    display: none;
+// =======================
+// 平滑弹出动画 (Slide Down)
+// =======================
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+    transition: transform 0.3s ease-out;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+    transform: translateY(-100%);
 }
 </style>
