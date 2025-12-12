@@ -9,8 +9,8 @@
                     </el-breadcrumb>
                     <h1 class="post-title">{{ post.title }}</h1>
                     <div class="post-meta">
-                        <span><el-icon><Calendar /></el-icon> {{ post.publishTime }}</span>
-                        <span><el-icon><View /></el-icon> 2.4k 阅读</span>
+                        <span><el-icon><Calendar /></el-icon> {{ post.createTime }}</span>
+                        <span><el-icon><View /></el-icon> {{ post.views }} 阅读</span>
                         <el-tag size="small" effect="plain">{{ post.category }}</el-tag>
                     </div>
                 </div>

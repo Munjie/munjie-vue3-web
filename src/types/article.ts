@@ -7,4 +7,6 @@ export interface ArticleVO {
     category: string
     image: string
     content: string
+    createTime: string
+    views: number
 }
