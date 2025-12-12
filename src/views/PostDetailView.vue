@@ -9,8 +9,8 @@
                     </el-breadcrumb>
                     <h1 class="post-title">{{ post.title }}</h1>
                     <div class="post-meta">
-                        <span><el-icon><Calendar /></el-icon> {{ post.createTime }}</span>
-                        <span><el-icon><View /></el-icon> {{ post.views }} 阅读</span>
+                        <span><el-icon><Calendar/></el-icon> {{ post.createTime }}</span>
+                        <span><el-icon><View/></el-icon> {{ post.views }} 阅读</span>
                         <el-tag size="small" effect="plain">{{ post.category }}</el-tag>
                     </div>
                 </div>
@@ -20,6 +20,7 @@
         <div class="container content-wrapper">
             <div class="post-body glass-panel">
                 <MdPreview
+                        v-if="contentLoaded"
                         :modelValue="post.content"
                         theme="dark"
                         preview-theme="github"
@@ -38,14 +39,14 @@
             </div>
         </div>
 
-        <el-backtop :right="40" :bottom="40" />
+        <el-backtop :right="40" :bottom="40"/>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { MdPreview } from 'md-editor-v3'
+import {ref, onMounted, watch, nextTick} from 'vue'
+import {useRoute} from 'vue-router'
+import {MdPreview} from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
 import {getArticleById} from "../api/home.ts";
 import type {ArticleVO} from "../types/article.ts";
@@ -53,7 +54,7 @@ import router from "../router";
 
 const route = useRoute()
 const post = ref<ArticleVO>()
-
+const contentLoaded = ref(false);
 // 模拟获取数据
 onMounted(async () => {
     const postId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
@@ -61,45 +62,15 @@ onMounted(async () => {
         await router.push('/404')
     }
     post.value = await getArticleById(postId)
-
-/*    // 实际开发中此处应为 API 请求
-    post.value = {
-        id: postId,
-        title: 'Vue 3 Composition API 深度解析',
-        date: '2023-10-24',
-        category: '前端',
-        cover: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',
-        content: `
-# 为什么选择 Composition API?
-
-Composition API 提供了一种更灵活的方式来组织逻辑，特别是在处理复杂组件时。
-
-## 1. 逻辑复用
-通过 \`ref\`, \`computed\` 和 \`watch\`，我们可以轻松提取可重用的函数。
-
-\`\`\`typescript
-import { ref, onMounted } from 'vue';
-
-export function useMouse() {
-  const x = ref(0);
-  const y = ref(0);
-  // ...逻辑
-  return { x, y };
-}
-\`\`\`
-
-## 2. 更好的类型推导
-由于是函数式风格，对 **TypeScript** 的支持几乎是天然的。
-
-> 提示：在 Vue 3.2+ 中，推荐使用 \`<script setup>\` 语法糖。
-
-### 高端暗黑风格实现方案
-1. **色调控制**：避免纯黑，使用深灰色。
-2. **光影效果**：利用 \`box-shadow\` 模拟紫色或蓝色的微光。
-3. **字体**：推荐使用 Inter 或 PingFang SC。
-    `
-    }*/
+    await nextTick();
+    contentLoaded.value = true;
 })
+watch(post, async (newPost) => {
+    if (newPost) {
+        await nextTick();
+
+    }
+});
 </script>
 
 <style scoped lang="scss">
@@ -112,7 +83,7 @@ export function useMouse() {
   .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, var(--bg-color) 100%);
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, var(--bg-color) 100%);
     display: flex;
     align-items: flex-end;
     padding-bottom: 40px;
@@ -207,7 +178,10 @@ export function useMouse() {
 :deep(.custom-breadcrumb) {
   .el-breadcrumb__inner {
     color: var(--text-secondary) !important;
-    &:hover { color: var(--accent-color) !important; }
+
+    &:hover {
+      color: var(--accent-color) !important;
+    }
   }
 }
 </style>
