@@ -16,13 +16,24 @@
             <div class="mobile-menu-btn" @click="drawer = true">
                 <el-icon :size="24"><Menu /></el-icon>
             </div>
+            <el-drawer
+                v-model="drawer"
+                direction="rtl"
+                size="30%"
+                :append-to-body="true"
+                :z-index="3000"
+                class="mobile-drawer"
+            >
+                <template #header>
+                    <span class="drawer-title">MENU</span>
+                </template>
 
-            <el-drawer v-model="drawer" title="MENU" direction="rtl" size="70%" class="mobile-drawer">
                 <nav class="mobile-nav">
-                    <router-link to="/" @click="drawer = false">首页</router-link>
-                    <router-link to="/tech" @click="drawer = false">技术</router-link>
-                    <router-link to="/life" @click="drawer = false">生活</router-link>
-                    <router-link to="/about" @click="drawer = false">关于</router-link>
+                    <div v-for="link in menuLinks" :key="link.path" class="mobile-nav-item">
+                        <router-link :to="link.path" @click="drawer = false">
+                            {{ link.name }}
+                        </router-link>
+                    </div>
                 </nav>
             </el-drawer>
         </div>
@@ -30,8 +41,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import {ref, watch} from 'vue'
 const drawer = ref(false)
+import { useRoute } from 'vue-router'
+const route = useRoute()
+const menuLinks = [
+    { name: '首页', path: '/' },
+    { name: '技术', path: '/tech' },
+    { name: '生活', path: '/life' },
+    { name: '关于', path: '/about' }
+]
+
+watch(
+    () => route.path,
+    () => {
+        // 只有当抽屉是打开状态时才执行关闭操作
+        if (drawer.value) {
+            drawer.value = false
+        }
+    }
+)
 </script>
 
 <style scoped lang="scss">
