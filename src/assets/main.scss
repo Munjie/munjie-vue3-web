@@ -7,6 +7,7 @@
   --glass-bg: rgba(30, 30, 30, 0.6);
   --glass-border: rgba(255, 255, 255, 0.1);
   --header-height: 70px;
+  --serch-color: #60618e;
 }
 
 body {
@@ -77,7 +78,7 @@ body {
 
   // 搜索按钮美化
   .el-input-group__append {
-    background-color: var(--accent-color) !important;
+    background-color: var(--serch-color) !important;
     color: #fff !important;
     border: none !important;
   }

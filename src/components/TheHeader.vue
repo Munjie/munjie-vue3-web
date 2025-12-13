@@ -42,7 +42,7 @@
                                     <el-button :icon="Search" @click="handleSearch"/>
                                 </template>
                             </el-input>
-                            <p class="search-hint">按 Enter 键搜索，或点击按钮</p>
+                            <!-- <p class="search-hint">按 Enter 键搜索，或点击按钮</p> -->
                         </div>
                     </el-popover>
 
@@ -88,7 +88,7 @@
             <div v-if="isMobileSearchActive" class="mobile-search-bar glass-panel">
                 <el-input
                     v-model="searchText"
-                    placeholder="搜索文章、技术..."
+                    placeholder="输入关键词.."
                     size="large"
                     clearable
                     @keyup.enter="handleMobileSearch"
