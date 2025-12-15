@@ -110,7 +110,7 @@
 <script setup lang="ts">
 import {ref, watch, nextTick} from 'vue'
 import {useRoute} from 'vue-router'
-import { Search, Menu, Moon, CloseBold } from '@element-plus/icons-vue'
+import { Search, Menu, CloseBold } from '@element-plus/icons-vue'
 import {ElInput} from 'element-plus';
 import router from "../router";
 import MetaLogo from '../components/MetaLogo.vue'

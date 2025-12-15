@@ -4,7 +4,8 @@
             <div class="footer-content">
                 <div class="footer-brand">
                     <div class="logo">
-                        <el-icon :size="20" color="#6366f1"><Moon /></el-icon>
+<!--                        <el-icon :size="20" color="#6366f1"><Moon /></el-icon>-->
+                        <MetaLogo class="mlogo" size="20"  />
                         <span>Meta.dev</span>
                     </div>
                     <p>记录代码与生活的数字碎片。</p>
@@ -12,13 +13,12 @@
 
                 <div class="footer-links">
                     <a href="#"><el-icon><Platform /></el-icon> GitHub</a>
-                    <a href="#"><el-icon><ChatDotRound /></el-icon> Twitter</a>
+                    <a href="#"><el-icon><ChatDotRound /></el-icon> FaceBook</a>
                     <a href="#"><el-icon><Message /></el-icon> Email</a>
                 </div>
             </div>
 
             <div class="footer-bottom">
-<!--                <p>&copy; 2020-2025 Nocturne Blog. Powered by Vue3 & Element Plus.</p>-->
                 <p>
                     &copy;2020-2025 Meta.dev Blog.   <a href="https://beian.miit.gov.cn" target="_blank"> 沪ICP备19003704号</a>
                 </p>
@@ -103,4 +103,15 @@
     align-items: center;
   }
 }
+/* 浅色模式 */
+.mlogo {
+    color: #6366f1; /* 深科技蓝灰 */
+}
+
+.dark .mlogo {
+    color: #6366f1;
+}
 </style>
+<script setup>
+import MetaLogo from "./MetaLogo.vue";
+</script>
