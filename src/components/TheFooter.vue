@@ -5,7 +5,7 @@
                 <div class="footer-brand">
                     <div class="logo">
                         <el-icon :size="20" color="#6366f1"><Moon /></el-icon>
-                        <span>NOCTURNE</span>
+                        <span>Meta.dev</span>
                     </div>
                     <p>记录代码与生活的数字碎片。</p>
                 </div>
@@ -20,7 +20,7 @@
             <div class="footer-bottom">
 <!--                <p>&copy; 2020-2025 Nocturne Blog. Powered by Vue3 & Element Plus.</p>-->
                 <p>
-                    &copy;2020-2025 Nocturne Blog.   <a href="https://beian.miit.gov.cn" target="_blank"> 沪ICP备19003704号</a>
+                    &copy;2020-2025 Meta.dev Blog.   <a href="https://beian.miit.gov.cn" target="_blank"> 沪ICP备19003704号</a>
                 </p>
             </div>
         </div>

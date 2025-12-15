@@ -2,10 +2,11 @@
     <header class="site-header glass-panel">
         <div class="container">
             <div class="logo">
-                <el-icon :size="24" color="#6366f1">
+<!--                <el-icon :size="24" color="#6366f1">
                     <Moon/>
-                </el-icon>
-                <span>NOCTURNE</span>
+                </el-icon>-->
+                <MetaLogo class="mlogo" />
+                <span>Meta.dev</span>
             </div>
             <div class="actions">
 
@@ -112,6 +113,7 @@ import {useRoute} from 'vue-router'
 import { Search, Menu, Moon, CloseBold } from '@element-plus/icons-vue'
 import {ElInput} from 'element-plus';
 import router from "../router";
+import MetaLogo from '../components/MetaLogo.vue'
 
 const drawer = ref(false)
 const route = useRoute()
@@ -449,5 +451,11 @@ watch(
 .slide-down-enter-from,
 .slide-down-leave-to {
     transform: translateY(-100%);
+}
+
+/* 浅色模式 */
+.mlogo {
+    color: #412dc2; /* 深科技蓝灰 */
+
 }
 </style>
