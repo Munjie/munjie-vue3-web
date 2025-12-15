@@ -5,7 +5,7 @@
 <!--                <el-icon :size="24" color="#6366f1">
                     <Moon/>
                 </el-icon>-->
-                <MetaLogo class="mlogo" />
+                <MetaLogo class="mlogo" size="20"  />
                 <span>Meta.dev</span>
             </div>
             <div class="actions">
@@ -455,7 +455,10 @@ watch(
 
 /* 浅色模式 */
 .mlogo {
-    color: #412dc2; /* 深科技蓝灰 */
+    color: #6366f1; /* 深科技蓝灰 */
+}
 
+.dark .mlogo {
+    color: #6366f1;
 }
 </style>

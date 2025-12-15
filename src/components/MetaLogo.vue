@@ -1,9 +1,10 @@
 <template>
     <svg
-            class="meta-logo"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 120 100"
-            fill="none"
+        class="meta-logo"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 120 100"
+        fill="none"
+        :style="logoStyle"
     >
         <line x1="10" y1="90" x2="10" y2="10"
               stroke="currentColor"
@@ -28,12 +29,23 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 
+const props = defineProps<{
+    size?: number | string
+}>()
+
+const logoStyle = computed(() => {
+    const height = props.size ?? 36
+    return {
+        height: typeof height === 'number' ? `${height}px` : height,
+        width: 'auto'
+    }
+})
 </script>
 
 <style scoped>
 .meta-logo {
-    width: 25px;
-    height: auto;
+    display: block;
 }
 </style>
