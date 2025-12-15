@@ -28,7 +28,7 @@
                 />
 
                 <div class="post-tags">
-                    <el-tag v-for="tag in ['Vue3', 'TypeScript', 'ElementPlus']" :key="tag" round>
+                    <el-tag v-for="tag in post.tags" :key="tag" round>
                         # {{ tag }}
                     </el-tag>
                 </div>
