@@ -17,6 +17,13 @@
                     <div class="message-content glass-panel">
                         <div class="text">
                             <MdPreview :modelValue="msg.content" theme="dark" />
+<!--                            <MdPreview-->
+<!--                                :modelValue="msg.content"-->
+<!--                                theme="dark"-->
+<!--                                :codeFoldable="true"-->
+<!--                                :showCodeRowNumber="true"-->
+<!--                                class="custom-md-preview"-->
+<!--                            />-->
                         </div>
                         <div class="message-actions" v-if="msg.role === 'assistant' && msg.content">
                             <el-icon class="copy-icon" @click="copyText(msg.content)"><DocumentCopy /></el-icon>
@@ -67,7 +74,6 @@ const userInput = ref('')
 const isTyping = ref(false)
 const scrollRef = ref<HTMLElement | null>(null)
 const historyTitle = ref('新对话')
-// 1. 修复：补充模板中缺失的变量
 const showSidebar = ref(true)
 const isDevelopment = import.meta.env.MODE === 'development'
 const baseURL = isDevelopment ? 'http://localhost:8090/blog/chat/completions' : '/api/chat/completions'
@@ -85,7 +91,7 @@ const sendMessage = async () => {
     messages.value.push({ role: 'user', content })
     userInput.value = ''
     isTyping.value = true
-    scrollToBottom()
+    await scrollToBottom()
 
     // 准备 AI 占位回复
     messages.value.push({ role: 'assistant', content: '' })
@@ -142,9 +148,46 @@ const sendMessage = async () => {
 }
 
 
+
+
 const copyText = (text: string) => {
-    navigator.clipboard.writeText(text)
-    ElMessage.success('已复制到剪贴板')
+    // 1. 优先使用现代 API
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text)
+            .then(() => ElMessage.success('已复制到剪贴板'))
+            .catch(() => fallbackCopy(text));
+    } else {
+        // 2. 兜底方案
+        fallbackCopy(text);
+    }
+}
+
+// 兜底方案实现
+const fallbackCopy = (text: string) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+
+    // 确保 textarea 在页面上不可见但可操作
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    textArea.style.top = "0";
+    document.body.appendChild(textArea);
+
+    textArea.focus();
+    textArea.select();
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            ElMessage.success('已复制到剪贴板');
+        } else {
+            ElMessage.error('复制失败，请手动选择复制');
+        }
+    } catch (err) {
+        ElMessage.error('浏览器不支持自动复制');
+    }
+
+    document.body.removeChild(textArea);
 }
 
 const resetChat = () => {
