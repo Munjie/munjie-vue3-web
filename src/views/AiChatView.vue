@@ -52,12 +52,14 @@
 import { ref, nextTick } from 'vue'
 import { MdPreview } from 'md-editor-v3'
 import { ElMessage } from 'element-plus'
+import {  Cpu, User, DocumentCopy } from '@element-plus/icons-vue'
 
 interface Message {
     role: 'user' | 'assistant';
     content: string;
 }
 
+// 状态定义
 const messages = ref<Message[]>([
     { role: 'assistant', content: '你好！我是你的 AI 助手，有什么可以帮你的吗？' }
 ])
@@ -65,7 +67,10 @@ const userInput = ref('')
 const isTyping = ref(false)
 const scrollRef = ref<HTMLElement | null>(null)
 const historyTitle = ref('新对话')
-
+// 1. 修复：补充模板中缺失的变量
+const showSidebar = ref(true)
+const isDevelopment = import.meta.env.MODE === 'development'
+const baseURL = isDevelopment ? 'http://localhost:8090/blog/chat/completions' : '/api/chat/completions'
 const scrollToBottom = async () => {
     await nextTick()
     if (scrollRef.value) {
@@ -87,13 +92,13 @@ const sendMessage = async () => {
     const lastIndex = messages.value.length - 1
 
     try {
-        const response = await fetch('http://localhost:8090/blog/api/chat/completions', {
+        const response = await fetch(baseURL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: "DeepSeek-R1-0528-Qwen3-8B",
-                stream: true, // 开启流式
-                messages: messages.value.slice(0, -1) // 发送历史上下文实现连续对话
+                stream: true,
+                messages: messages.value.slice(0, -1)
             })
         })
 
@@ -106,18 +111,26 @@ const sendMessage = async () => {
             if (done) break
 
             const chunk = decoder.decode(value)
-            // 处理 SSE 数据格式 (具体解析取决于后端转发的格式)
             const lines = chunk.split('\n')
+
             lines.forEach(line => {
                 if (line.startsWith('data:')) {
                     try {
-                        const data = JSON.parse(line.slice(5))
+                        // 这里有时会返回 [DONE] 字符串，需要特殊处理
+                        const dataStr = line.slice(5).trim()
+                        if (dataStr === '[DONE]') return
+
+                        const data = JSON.parse(dataStr)
                         const delta = data.choices[0].delta.content
-                        if (delta) {
+
+                        // 2. 修复：安全访问数组，解决 TS2532 报错
+                        if (delta && messages.value[lastIndex]) {
                             messages.value[lastIndex].content += delta
                             scrollToBottom()
                         }
-                    } catch (e) { /* 忽略心跳或非JSON数据 */ }
+                    } catch (e) {
+                        console.warn('解析流数据失败', e)
+                    }
                 }
             })
         }
@@ -127,6 +140,7 @@ const sendMessage = async () => {
         isTyping.value = false
     }
 }
+
 
 const copyText = (text: string) => {
     navigator.clipboard.writeText(text)
