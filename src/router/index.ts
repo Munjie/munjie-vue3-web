@@ -14,6 +14,11 @@ const router = createRouter({
             path: '/post/:id',
             name: 'post-detail',
             component: () => import('../views/PostDetailView.vue')
+        },
+        {
+            path: '/ai-chat',
+            name: 'ai-chat',
+            component: () => import('../views/AiChatView.vue')
         }
     ],
     scrollBehavior() {
