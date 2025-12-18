@@ -2,7 +2,6 @@
     <div class="chat-container">
         <aside class="chat-sidebar glass-panel" :class="{ 'collapsed': !showSidebar }">
             <el-button class="new-chat-btn" @click="createNewChat" :icon="Plus">新对话</el-button>
-
             <div class="history-list">
                 <div
                     v-for="item in sessions"
@@ -26,13 +25,6 @@
                     <div class="message-content glass-panel">
                         <div class="text">
                             <MdPreview :modelValue="msg.content" theme="dark" />
-<!--                            <MdPreview-->
-<!--                                :modelValue="msg.content"-->
-<!--                                theme="dark"-->
-<!--                                :codeFoldable="true"-->
-<!--                                :showCodeRowNumber="true"-->
-<!--                                class="custom-md-preview"-->
-<!--                            />-->
                         </div>
                         <div class="message-actions" v-if="msg.role === 'assistant' && msg.content">
                             <el-icon class="copy-icon" @click="copyText(msg.content)"><DocumentCopy /></el-icon>
@@ -43,22 +35,51 @@
                     <div class="typing-indicator"><span>.</span><span>.</span><span>.</span></div>
                 </div>
             </div>
-
-            <div class="input-area glass-panel">
-                <el-input
+            <div class="input-area-container">
+                <div class="input-card glass-panel">
+                    <el-input
                         v-model="userInput"
                         type="textarea"
-                        :autosize="{ minRows: 1, maxRows: 5 }"
-                        placeholder="给 DeepSeek 发送消息..."
-                        @keyup.enter.prevent="sendMessage"
-                />
-                <el-button
-                        class="send-btn"
-                        type="primary"
-                        :disabled="!userInput || isTyping"
-                        @click="sendMessage"
-                        icon="Promotion"
-                />
+                        :autosize="{ minRows: 1, maxRows: 6 }"
+                        placeholder="问问 AI..."
+                        @keydown.enter.prevent="handleEnter"
+                        class="chat-textarea"
+                    />
+
+                    <div class="input-actions">
+                        <el-select
+                            v-model="selectedModel"
+                            size="small"
+                            class="gemini-selector"
+                            :teleported="true"
+                            placement="top-end"
+                        >
+                            <template #prefix>
+                                <el-icon class="model-icon"><MagicStick /></el-icon>
+                            </template>
+                            <el-option
+                                v-for="item in modelOptions"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value"
+                            >
+                                <div class="model-option">
+                                    <span class="label">{{ item.label }}</span>
+                                    <span class="desc">{{ item.desc }}</span>
+                                </div>
+                            </el-option>
+                        </el-select>
+
+                        <el-button
+                            class="gemini-send-btn"
+                            :disabled="!userInput || isTyping"
+                            @click="sendMessage"
+                            circle
+                        >
+                            <el-icon><Promotion /></el-icon>
+                        </el-button>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -80,8 +101,18 @@ interface ChatSession {
 import { ref, onMounted, nextTick } from 'vue'
 import { MdPreview } from 'md-editor-v3'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Cpu, User, DocumentCopy, Delete, ChatLineRound } from '@element-plus/icons-vue'
+import {Plus, Cpu, User, DocumentCopy, Delete, ChatLineRound, Promotion} from '@element-plus/icons-vue'
 
+
+
+// 模型选项配置
+const modelOptions = [
+    { label: 'GPT-5', value: 'gpt-5-nano', desc: '平衡性能与速度' },
+    { label: 'DeepSeek-R1', value: 'DeepSeek-R1-0528-Qwen3-8B', desc: '强大的通用能力' }
+]
+
+
+const selectedModel = ref<string>(modelOptions[0]?.value ?? '')
 // --- 状态定义 ---
 const STORAGE_KEY = 'nocturne_chat_history'
 const sessions = ref<ChatSession[]>([])
@@ -96,6 +127,13 @@ const currentSession = ref<ChatSession | null>(null)
 
 const baseURL = isDevelopment ? 'http://localhost:8090/blog/chat/completions' : '/api/chat/completions'
 
+
+const handleEnter = (e: KeyboardEvent) => {
+    // 如果是移动端，Enter 通常换行；PC 端 Enter 发送
+    if (window.innerWidth > 768 && !e.shiftKey) {
+        sendMessage()
+    }
+}
 // --- 核心：初始化加载 ---
 onMounted(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
@@ -183,7 +221,7 @@ const sendMessage = async () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: "DeepSeek-R1-0528-Qwen3-8B",
+                model: selectedModel.value,
                 stream: true,
                 messages: currentSession.value.messages.slice(0, -1)
             })
@@ -351,20 +389,6 @@ const fallbackCopy = (text: string) => {
   }
 }
 
-.input-area {
-  margin: 20px;
-  padding: 10px;
-  border-radius: 15px;
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  :deep(.el-textarea__inner) {
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-    color: white;
-  }
-}
 
 .typing-indicator span {
   animation: blink 1.4s infinite;
@@ -429,5 +453,127 @@ const fallbackCopy = (text: string) => {
         border-color: var(--accent-color) !important;
         color: var(--accent-color) !important;
     }
+}
+
+.input-area-container {
+    padding: 0 20px 20px;
+    background: transparent;
+
+    @media (max-width: 768px) {
+        padding: 10px;
+        background: #151515; // 移动端吸底背景
+    }
+}
+
+.input-card {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 12px 16px;
+    border-radius: 28px; // 超大圆角
+    background: rgba(30, 30, 30, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: border-color 0.3s;
+
+    &:focus-within {
+        border-color: rgba(99, 102, 241, 0.4);
+        background: rgba(35, 35, 35, 0.9) !important;
+    }
+}
+
+.chat-textarea {
+    :deep(.el-textarea__inner) {
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        color: #ececec;
+        font-size: 16px;
+        padding: 8px 0;
+        line-height: 1.6;
+        resize: none;
+    }
+}
+
+/* -------------------
+   右下角操作区
+   ------------------- */
+.input-actions {
+    display: flex;
+    justify-content: flex-end; // 靠右对齐
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.gemini-selector {
+    /* 1. 给一个最小宽度，防止文字消失 */
+    min-width: 100px;
+    width: auto;
+
+    :deep(.el-input__wrapper) {
+        background-color: rgba(255, 255, 255, 0.07) !important;
+        box-shadow: none !important;
+        border-radius: 20px !important;
+        padding: 4px 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        /* 2. 确保选中的内容颜色可见 */
+        .el-input__inner {
+            color: #bbbbbb !important; /* 浅灰色文字 */
+            font-size: 13px;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            /* 防止文字被裁切 */
+            height: 24px;
+            line-height: 24px;
+        }
+
+        /* 3. 调整图标位置 */
+        .el-input__prefix {
+            display: flex;
+            align-items: center;
+            .model-icon {
+                color: var(--accent-color);
+                margin-right: 2px;
+                font-size: 14px;
+            }
+        }
+
+        /* 4. 隐藏右侧的小箭头（Gemini 风格通常更简洁） */
+        /* 如果你想留着箭头，可以删掉下面这段 */
+        .el-input__suffix {
+            display: none;
+        }
+    }
+}
+/* 发送按钮样式 */
+.gemini-send-btn {
+    width: 40px;
+    height: 40px;
+    background: var(--accent-color) !important;
+    border: none !important;
+    color: white !important;
+    font-size: 18px;
+    transition: all 0.2s;
+
+    &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+    }
+
+    &:disabled {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.3) !important;
+    }
+}
+
+/* 下拉菜单样式定制 */
+.model-option {
+    display: flex;
+    flex-direction: column;
+    padding: 4px 0;
+
+    .label { font-weight: bold; font-size: 14px; }
+    .desc { font-size: 11px; color: #888; margin-top: 2px; }
 }
 </style>
