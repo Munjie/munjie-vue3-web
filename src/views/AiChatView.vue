@@ -35,6 +35,52 @@
                     <div class="typing-indicator"><span>.</span><span>.</span><span>.</span></div>
                 </div>
             </div>
+<!--            <div class="input-area-container">-->
+<!--                <div class="input-card glass-panel">-->
+<!--                    <el-input-->
+<!--                        v-model="userInput"-->
+<!--                        type="textarea"-->
+<!--                        :autosize="{ minRows: 1, maxRows: 6 }"-->
+<!--                        placeholder="问问 AI..."-->
+<!--                        @keydown.enter.prevent="handleEnter"-->
+<!--                        class="chat-textarea"-->
+<!--                    />-->
+
+<!--                    <div class="input-actions">-->
+<!--                        <el-select-->
+<!--                            v-model="selectedModel"-->
+<!--                            size="small"-->
+<!--                            class="gemini-selector"-->
+<!--                            :teleported="true"-->
+<!--                            placement="top-end"-->
+<!--                        >-->
+<!--                            <template #prefix>-->
+<!--                                <el-icon class="model-icon"><MagicStick /></el-icon>-->
+<!--                            </template>-->
+<!--                            <el-option-->
+<!--                                v-for="item in modelOptions"-->
+<!--                                :key="item.value"-->
+<!--                                :label="item.label"-->
+<!--                                :value="item.value"-->
+<!--                            >-->
+<!--                                <div class="model-option">-->
+<!--                                    <span class="label">{{ item.label }}</span>-->
+<!--                                    <span class="desc">{{ item.desc }}</span>-->
+<!--                                </div>-->
+<!--                            </el-option>-->
+<!--                        </el-select>-->
+
+<!--                        <el-button-->
+<!--                            class="gemini-send-btn"-->
+<!--                            :disabled="!userInput || isTyping"-->
+<!--                            @click="sendMessage"-->
+<!--                            circle-->
+<!--                        >-->
+<!--                            <el-icon><Promotion /></el-icon>-->
+<!--                        </el-button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
             <div class="input-area-container">
                 <div class="input-card glass-panel">
                     <el-input
@@ -46,38 +92,59 @@
                         class="chat-textarea"
                     />
 
-                    <div class="input-actions">
-                        <el-select
-                            v-model="selectedModel"
-                            size="small"
-                            class="gemini-selector"
-                            :teleported="true"
-                            placement="top-end"
-                        >
-                            <template #prefix>
-                                <el-icon class="model-icon"><MagicStick /></el-icon>
-                            </template>
-                            <el-option
-                                v-for="item in modelOptions"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value"
+                    <div class="input-toolbar">
+                        <div class="toolbar-left">
+                            <el-upload
+                                action="#"
+                                :auto-upload="false"
+                                :show-file-list="false"
+                                @change="handleFileUpload"
                             >
-                                <div class="model-option">
-                                    <span class="label">{{ item.label }}</span>
-                                    <span class="desc">{{ item.desc }}</span>
-                                </div>
-                            </el-option>
-                        </el-select>
+                                <template #trigger>
+                                    <div class="icon-btn-wrapper">
+                                        <el-icon class="action-icon"><Picture /></el-icon>
+                                    </div>
+                                </template>
+                            </el-upload>
+                            <div class="icon-btn-wrapper">
+                                <el-icon class="action-icon"><Files /></el-icon>
+                            </div>
+                        </div>
 
-                        <el-button
-                            class="gemini-send-btn"
-                            :disabled="!userInput || isTyping"
-                            @click="sendMessage"
-                            circle
-                        >
-                            <el-icon><Promotion /></el-icon>
-                        </el-button>
+                        <div class="toolbar-right">
+                            <el-select
+                                v-model="selectedModel"
+                                size="small"
+                                class="gemini-pill-selector"
+                                :teleported="true"
+                                placement="top-end"
+                            >
+                                <template #prefix>
+                                    <el-icon class="model-sparkle"><MagicStick /></el-icon>
+                                </template>
+
+                                <el-option
+                                    v-for="item in modelOptions"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value"
+                                >
+                                    <div class="model-option-content">
+                                        <div class="model-name">{{ item.label }}</div>
+                                        <div class="model-description">{{ item.desc }}</div>
+                                    </div>
+                                </el-option>
+                            </el-select>
+
+                            <el-button
+                                class="gemini-send-btn"
+                                :disabled="!userInput || isTyping"
+                                @click="sendMessage"
+                                circle
+                            >
+                                <el-icon><Promotion /></el-icon>
+                            </el-button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -107,10 +174,15 @@ import {Plus, Cpu, User, DocumentCopy, Delete, ChatLineRound, Promotion} from '@
 
 // 模型选项配置
 const modelOptions = [
-    { label: 'GPT-5', value: 'gpt-5-nano', desc: '平衡性能与速度' },
-    { label: 'DeepSeek-R1', value: 'DeepSeek-R1-0528-Qwen3-8B', desc: '强大的通用能力' }
+    { label: 'GPT-5-Nano', value: 'gpt-5-nano', desc: '平衡性能与速度' },
+    { label: 'GPT-5.2', value: 'gpt-5.2', desc: 'gpt-5.2' },
+    { label: 'DeepSeek-R1', value: 'DeepSeek-R1-0528-Qwen3-8B', desc: '日常处理' },
+    { label: 'DeepSeek-V3', value: 'deepseek-v3', desc: '日常处理' },
+    { label: 'DeepSeek-V3-2-Exp', value: 'deepseek-v3-2-exp', desc: '日常处理' },
 ]
-
+const handleFileUpload = (file: any) => {
+    ElMessage.info(`已选择文件: ${file.name} (后端接入开发中...)`)
+}
 
 const selectedModel = ref<string>(modelOptions[0]?.value ?? '')
 // --- 状态定义 ---
@@ -506,7 +578,7 @@ const fallbackCopy = (text: string) => {
 
 .gemini-selector {
     /* 1. 给一个最小宽度，防止文字消失 */
-    min-width: 100px;
+    min-width: 150px;
     width: auto;
 
     :deep(.el-input__wrapper) {
@@ -575,5 +647,128 @@ const fallbackCopy = (text: string) => {
 
     .label { font-weight: bold; font-size: 14px; }
     .desc { font-size: 11px; color: #888; margin-top: 2px; }
+}
+
+/* -------------------
+   1. 输入框外壳
+   ------------------- */
+.input-card {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 12px 16px;
+    border-radius: 28px;
+    background: rgba(32, 33, 36, 0.9) !important; // 更接近深色模式底色
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+/* -------------------
+   2. 底部工具栏布局
+   ------------------- */
+.input-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.toolbar-left {
+    display: flex;
+    gap: 8px;
+
+    .icon-btn-wrapper {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s;
+        color: #c4c7c5;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+
+        .action-icon { font-size: 20px; }
+    }
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* -------------------
+   3. 核心：胶囊模型选择器
+   ------------------- */
+.gemini-pill-selector {
+    min-width: 100px;
+    width: auto;
+    :deep(.el-input__wrapper) {
+        background-color: transparent !important;
+        border: 1px solid #444746 !important; // Gemini 风格的细边框
+        border-radius: 20px !important; // 胶囊圆角
+        padding: 2px 12px !important;
+        box-shadow: none !important;
+        height: 32px;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border-color: #5f6368 !important;
+        }
+
+        .el-input__inner {
+            color: #c4c7c5 !important;
+            font-size: 13px;
+            font-weight: 500;
+            width: 150px; // 固定宽度防止文字溢出
+        }
+
+        .model-sparkle {
+            color: #a8c7fa; // 浅蓝色图标
+            font-size: 14px;
+        }
+    }
+}
+
+/* -------------------
+   4. 核心：下拉描述样式
+   ------------------- */
+/* 注意：此部分需要去掉 scoped 或者使用 :deep 确保作用于弹出层 */
+.model-option-content {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 0;
+    line-height: 1.4;
+
+    .model-name {
+        color: #e3e3e3;
+        font-weight: 500;
+        font-size: 10px;
+    }
+
+    .model-description {
+        color: #9aa0a6;
+        font-size: 8px;
+        margin-top: 2px;
+        white-space: normal; // 允许描述文字换行
+    }
+}
+
+/* 强制覆盖 Element Plus 默认样式以显示完整高度 */
+:deep(.el-select-dropdown__item) {
+    height: auto !important;
+    padding: 8px 15px !important;
+}
+
+.gemini-send-btn {
+    background: #a8c7fa !important; // Gemini 风格淡蓝
+    color: #062e6f !important; // 深色图标
+    border: none !important;
 }
 </style>

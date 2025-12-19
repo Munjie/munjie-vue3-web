@@ -26,6 +26,7 @@ declare module 'vue' {
     ElRow: typeof import('element-plus/es')['ElRow']
     ElSelect: typeof import('element-plus/es')['ElSelect']
     ElTag: typeof import('element-plus/es')['ElTag']
+    ElUpload: typeof import('element-plus/es')['ElUpload']
     MetaLogo: typeof import('./src/components/MetaLogo.vue')['default']
     PostCard: typeof import('./src/components/PostCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
