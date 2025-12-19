@@ -174,17 +174,18 @@ import {Plus, Cpu, User, DocumentCopy, Delete, ChatLineRound, Promotion} from '@
 
 // 模型选项配置
 const modelOptions = [
-    { label: 'GPT-5-Nano', value: 'gpt-5-nano', desc: '平衡性能与速度' },
-    { label: 'GPT-5.2', value: 'gpt-5.2', desc: 'gpt-5.2' },
-    { label: 'DeepSeek-R1', value: 'DeepSeek-R1-0528-Qwen3-8B', desc: '日常处理' },
-    { label: 'DeepSeek-V3', value: 'deepseek-v3', desc: '日常处理' },
-    { label: 'DeepSeek-V3-2-Exp', value: 'deepseek-v3-2-exp', desc: '日常处理' },
+    { label: 'GPT-5-Nano', value: 1, desc: '平衡性能与速度' },
+    { label: 'GPT-5.2', value: 5, desc: 'gpt-5.2' },
+    { label: 'DeepSeek-R1', value: 2, desc: '日常处理' },
+    { label: 'DeepSeek-V3', value: 3, desc: '快速' },
+    { label: 'DeepSeek-V3-2-Exp', value: 4, desc: '日常处理' },
 ]
 const handleFileUpload = (file: any) => {
     ElMessage.info(`已选择文件: ${file.name} (后端接入开发中...)`)
 }
 
-const selectedModel = ref<string>(modelOptions[0]?.value ?? '')
+// const selectedModel = ref<string>(modelOptions[0]?.value ?? '')
+const selectedModel = ref<number>(modelOptions[0]?.value ?? 0)
 // --- 状态定义 ---
 const STORAGE_KEY = 'nocturne_chat_history'
 const sessions = ref<ChatSession[]>([])
