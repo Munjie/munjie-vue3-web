@@ -435,7 +435,7 @@ const fetchAllModel = async () => {
             desc: item.modelDesc
         }))
         if (modelOptions.value.length > 0) {
-            selectedModel.value = modelOptions.value[0].value
+            selectedModel.value = modelOptions.value[1].value
         }
     } catch (error) {
         modelOptions.value = []
