@@ -861,7 +861,7 @@ const fallbackCopy = (text: string) => {
 
 /* 侧边栏抽屉化改造 */
 .chat-sidebar {
-  width: 260px;
+  width: 150px;
   border-right: 1px solid var(--glass-border);
   padding: 20px;
   display: flex;
