@@ -48,6 +48,7 @@
                     </el-popover>
 
                     <router-link to="/">首页</router-link>
+                    <router-link to="/ai-chat">AI</router-link>
                     <router-link to="/tech">技术</router-link>
                     <router-link to="/life">生活</router-link>
                     <router-link to="/about">关于</router-link>
@@ -213,6 +214,7 @@ const toggleMobileSearch = () => {
 }*/
 const menuLinks = [
     {name: '首页', path: '/'},
+    {name: 'AI', path: '/ai-chat'},
     {name: '技术', path: '/tech'},
     {name: '生活', path: '/life'},
     {name: '关于', path: '/about'}

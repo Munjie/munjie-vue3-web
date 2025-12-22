@@ -8,7 +8,7 @@
         </router-view>
     </div>
     <TheFooter />
-    <transition name="el-fade-in">
+<!--    <transition name="el-fade-in">
         <div
             v-if="showFloatBtn"
             class="ai-float-btn"
@@ -16,13 +16,13 @@
         >
             <el-icon :size="28"><ChatDotRound /></el-icon>
         </div>
-    </transition>
+    </transition>-->
 </template>
 
 <script setup lang="ts">
 import TheHeader from '@/components/TheHeader.vue'
 import TheFooter from '@/components/TheFooter.vue'
-import {ChatDotRound} from "@element-plus/icons-vue";
+/*import {ChatDotRound} from "@element-plus/icons-vue";
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
@@ -33,7 +33,7 @@ const showFloatBtn = computed(() => {
 })
 const goToChat = () => {
     router.push('/ai-chat')
-}
+}*/
 </script>
 
 <style>
