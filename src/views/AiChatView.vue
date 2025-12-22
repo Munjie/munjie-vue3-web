@@ -164,7 +164,7 @@ interface ChatSession {
 import {ref, onMounted, nextTick} from 'vue'
 import {MdPreview} from 'md-editor-v3'
 import {ElMessage, ElMessageBox} from 'element-plus'
-import {Plus, Cpu, User, DocumentCopy, Delete, ChatLineRound, Promotion} from '@element-plus/icons-vue'
+import {Plus, DocumentCopy, Delete, ChatLineRound, Promotion} from '@element-plus/icons-vue'
 
 // 模型选项配置
 const modelOptions = [
