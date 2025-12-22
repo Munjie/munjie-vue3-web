@@ -15,7 +15,7 @@
                     <Close/>
                 </el-icon>
             </div>
-            <el-button class="new-chat-btn" @click="createNewChat" :icon="Plus">新对话</el-button>
+            <el-button class="new-chat-btn" @click="createNewChat" :icon="Plus">新聊天</el-button>
             <div class="history-list">
                 <div
                         v-for="item in sessions"
@@ -245,7 +245,7 @@ const createNewChat = () => {
     const newId = Date.now().toString()
     const newSession: ChatSession = {
         id: newId,
-        title: '新对话',
+        title: '新聊天',
         messages: [{role: 'assistant', content: '你好！我是 AI 助手，今天想聊点什么？'}],
         updateTime: Date.now()
     }
@@ -266,7 +266,7 @@ const switchSession = (id: string) => {
 
 const deleteSession = (id: string, event: Event) => {
     event.stopPropagation()
-    ElMessageBox.confirm('确定要删除这段对话吗？', '提示').then(() => {
+    ElMessageBox.confirm('确定要删除这段聊天记录吗？', '提示').then(() => {
         sessions.value = sessions.value.filter(s => s.id !== id)
         if (sessions.value.length === 0) {
             createNewChat()
@@ -285,7 +285,7 @@ const sendMessage = async () => {
     if (!userInput.value || isTyping.value || !currentSession.value) return
     const userContent = userInput.value
     // 1. 如果是新对话的第一条消息，更新标题
-    if (currentSession.value.messages.length === 1 && currentSession.value.title === '新对话') {
+    if (currentSession.value.messages.length === 1 && currentSession.value.title === '新聊天') {
         currentSession.value.title = userContent.substring(0, 15) + (userContent.length > 15 ? '...' : '')
     }
     currentSession.value.messages.push({role: 'user', content: userContent})
