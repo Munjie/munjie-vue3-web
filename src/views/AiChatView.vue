@@ -64,7 +64,7 @@
                         </div>
                     </div>
                 </div>
-                <div v-if="isTyping" class="message-row assistant">
+              <div v-if="isTyping" class="message-row assistant">
                     <div class="typing-indicator"><span>.</span><span>.</span><span>.</span></div>
                 </div>
             </div>
@@ -191,6 +191,27 @@ const baseURL = isDevelopment ? 'http://localhost:8090/blog/chat/completions' : 
 // --- 新增响应式状态 ---
 const isMobile = ref(false)
 
+// 在 script 顶部定义
+const typewriterQueue: string[] = [];
+let isProcessingQueue = false;
+
+// 打字机处理函数
+const processTypewriter = async (targetMsg: any) => {
+    if (isProcessingQueue) return;
+    isProcessingQueue = true;
+
+    while (typewriterQueue.length > 0) {
+        const char = typewriterQueue.shift();
+        if (char) {
+            targetMsg.content += char;
+            // 控制打字速度：30ms 一个字，这会让视觉非常顺滑
+            await new Promise(resolve => setTimeout(resolve, 30));
+            await scrollToBottom();
+        }
+    }
+    isProcessingQueue = false;
+};
+
 // 检查是否是移动端
 const checkMobile = () => {
     isMobile.value = window.innerWidth <= 768
@@ -294,7 +315,7 @@ const sendMessage = async () => {
     await scrollToBottom()
     // 2. 准备 AI 占位
     currentSession.value.messages.push({role: 'assistant', content: ''})
-    const lastIndex = currentSession.value.messages.length - 1
+    // const lastIndex = currentSession.value.messages.length - 1
     try {
         const response = await fetch(baseURL, {
             method: 'POST',
@@ -305,10 +326,11 @@ const sendMessage = async () => {
                 messages: currentSession.value.messages.slice(0, -1)
             })
         })
-
         if (!response.body) return
         const reader = response.body.getReader()
         const decoder = new TextDecoder()
+
+
 
         while (true) {
             const {done, value} = await reader.read()
@@ -325,12 +347,15 @@ const sendMessage = async () => {
                         const delta = data.choices[0].delta.content
                         // --- sendMessage 内部的流式解析部分 ---
                         if (delta && currentSession.value) {
-                            // 修复：获取目标消息引用并进行空值判断
+                            typewriterQueue.push(...delta.split(''));
+                            const lastIndex = currentSession.value.messages.length - 1;
+                            processTypewriter(currentSession.value.messages[lastIndex]);
+                           /* // 修复：获取目标消息引用并进行空值判断
                             const targetMessage = currentSession.value.messages[lastIndex]
                             if (targetMessage) {
                                 targetMessage.content += delta
                                 scrollToBottom()
-                            }
+                            }*/
                         }
 
                     } catch (e) {
@@ -340,6 +365,7 @@ const sendMessage = async () => {
         }
         // 成功结束后保存一次
         saveToLocal()
+        isTyping.value = false
     } catch (error) {
         ElMessage.error('网络错误')
         isTyping.value = false
@@ -358,12 +384,23 @@ const copyText = (text: string) => {
     }
 }
 
-const scrollToBottom = async () => {
+/*const scrollToBottom = async () => {
     await nextTick()
     if (scrollRef.value) {
         scrollRef.value.scrollTop = scrollRef.value.scrollHeight
     }
-}
+}*/
+let scrollTimer: number | null = null;
+const scrollToBottom = async () => {
+    if (scrollTimer) return;
+    await nextTick()
+    scrollTimer = window.requestAnimationFrame(() => {
+        if (scrollRef.value) {
+            scrollRef.value.scrollTop = scrollRef.value.scrollHeight;
+        }
+        scrollTimer = null;
+    });
+};
 // 兜底方案实现
 const fallbackCopy = (text: string) => {
     const textArea = document.createElement("textarea");
@@ -909,4 +946,48 @@ const fetchAllModel = async () => {
   }
 }
 
+/* 消息文本的基础样式 */
+.message-content .text {
+    line-height: 1.6;
+    word-break: break-word;
+
+    /* 给新生成的文字一个自然的过渡 */
+    transition: all 0.2s ease;
+}
+
+/* 模拟打字机光标 (正在输入时显示) */
+.is-typing .text::after {
+    content: " ";
+    display: inline-block;
+    width: 4px;
+    height: 18px;
+    background-color: var(--accent-color);
+    margin-left: 4px;
+    vertical-align: middle;
+    animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.thinking-dots {
+    display: flex;
+    gap: 4px;
+    padding: 10px;
+    span {
+        width: 6px; height: 6px;
+        background: var(--accent-color);
+        border-radius: 50%;
+        animation: dot-jump 1.4s infinite ease-in-out;
+        &:nth-child(2) { animation-delay: 0.2s; }
+        &:nth-child(3) { animation-delay: 0.4s; }
+    }
+}
+
+@keyframes dot-jump {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-6px); }
+}
 </style>
