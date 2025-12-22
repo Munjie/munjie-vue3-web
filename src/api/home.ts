@@ -21,3 +21,13 @@ export const getArticleById = async (id: string| undefined): Promise<ArticleVO> 
         throw error;
     }
 };
+
+
+export const getAllModel  = async () => {
+    try {
+        return await http.get('/api/chat/all-model')  ;
+    } catch (error) {
+        console.error('获取数据失败:', error);
+        return [];
+    }
+};

@@ -149,6 +149,8 @@
 
 <script setup lang="ts">
 
+import {getAllModel} from "../api/home.ts";
+
 interface Message {
     role: 'user' | 'assistant';
     content: string;
@@ -166,19 +168,13 @@ import {MdPreview} from 'md-editor-v3'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {Plus, DocumentCopy, Delete, ChatLineRound, Promotion} from '@element-plus/icons-vue'
 
-// 模型选项配置
-const modelOptions = [
-    {label: 'GPT-5-Nano', value: 1, desc: '平衡性能与速度'},
-    {label: 'GPT-5.2', value: 5, desc: 'gpt-5.2'},
-    {label: 'DeepSeek-R1', value: 2, desc: '日常处理'},
-    {label: 'DeepSeek-V3', value: 3, desc: '快速'},
-    {label: 'DeepSeek-V3-2-Exp', value: 4, desc: '日常处理'},
-]
+const modelOptions = ref();
 const handleFileUpload = (file: any) => {
     ElMessage.info(`已选择文件: ${file.name} (后端接入开发中...)`)
 }
 
-const selectedModel = ref<number>(modelOptions[0]?.value ?? 0)
+
+const selectedModel = ref()
 // --- 状态定义 ---
 const STORAGE_KEY = 'nocturne_chat_history'
 const sessions = ref<ChatSession[]>([])
@@ -220,6 +216,7 @@ const handleEnter = (e: KeyboardEvent) => {
 }
 // --- 核心：初始化加载 ---
 onMounted(() => {
+    fetchAllModel();
     checkMobile()
     window.addEventListener('resize', checkMobile)
     const saved = localStorage.getItem(STORAGE_KEY)
@@ -234,6 +231,8 @@ onMounted(() => {
     } else {
         createNewChat()
     }
+
+
 })
 // --- 核心：保存到本地 ---
 const saveToLocal = () => {
@@ -388,6 +387,23 @@ const fallbackCopy = (text: string) => {
     }
 
     document.body.removeChild(textArea);
+}
+
+const fetchAllModel = async () => {
+    try {
+        const res = await getAllModel();
+        modelOptions.value = (res as any).data.map((item: any) => ({
+            label: item.modelName,
+            value: item.id,
+            desc: item.modelDesc
+        }))
+        if (modelOptions.value.length > 0) {
+            selectedModel.value = modelOptions.value[0].value
+        }
+    } catch (error) {
+        modelOptions.value = []
+        ElMessage.error('加载模型列表失败')
+    }
 }
 </script>
 
