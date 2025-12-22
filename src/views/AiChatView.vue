@@ -35,52 +35,6 @@
                     <div class="typing-indicator"><span>.</span><span>.</span><span>.</span></div>
                 </div>
             </div>
-<!--            <div class="input-area-container">-->
-<!--                <div class="input-card glass-panel">-->
-<!--                    <el-input-->
-<!--                        v-model="userInput"-->
-<!--                        type="textarea"-->
-<!--                        :autosize="{ minRows: 1, maxRows: 6 }"-->
-<!--                        placeholder="问问 AI..."-->
-<!--                        @keydown.enter.prevent="handleEnter"-->
-<!--                        class="chat-textarea"-->
-<!--                    />-->
-
-<!--                    <div class="input-actions">-->
-<!--                        <el-select-->
-<!--                            v-model="selectedModel"-->
-<!--                            size="small"-->
-<!--                            class="gemini-selector"-->
-<!--                            :teleported="true"-->
-<!--                            placement="top-end"-->
-<!--                        >-->
-<!--                            <template #prefix>-->
-<!--                                <el-icon class="model-icon"><MagicStick /></el-icon>-->
-<!--                            </template>-->
-<!--                            <el-option-->
-<!--                                v-for="item in modelOptions"-->
-<!--                                :key="item.value"-->
-<!--                                :label="item.label"-->
-<!--                                :value="item.value"-->
-<!--                            >-->
-<!--                                <div class="model-option">-->
-<!--                                    <span class="label">{{ item.label }}</span>-->
-<!--                                    <span class="desc">{{ item.desc }}</span>-->
-<!--                                </div>-->
-<!--                            </el-option>-->
-<!--                        </el-select>-->
-
-<!--                        <el-button-->
-<!--                            class="gemini-send-btn"-->
-<!--                            :disabled="!userInput || isTyping"-->
-<!--                            @click="sendMessage"-->
-<!--                            circle-->
-<!--                        >-->
-<!--                            <el-icon><Promotion /></el-icon>-->
-<!--                        </el-button>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
             <div class="input-area-container">
                 <div class="input-card glass-panel">
                     <el-input
@@ -170,8 +124,6 @@ import { MdPreview } from 'md-editor-v3'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {Plus, Cpu, User, DocumentCopy, Delete, ChatLineRound, Promotion} from '@element-plus/icons-vue'
 
-
-
 // 模型选项配置
 const modelOptions = [
     { label: 'GPT-5-Nano', value: 1, desc: '平衡性能与速度' },
@@ -184,7 +136,6 @@ const handleFileUpload = (file: any) => {
     ElMessage.info(`已选择文件: ${file.name} (后端接入开发中...)`)
 }
 
-// const selectedModel = ref<string>(modelOptions[0]?.value ?? '')
 const selectedModel = ref<number>(modelOptions[0]?.value ?? 0)
 // --- 状态定义 ---
 const STORAGE_KEY = 'nocturne_chat_history'
@@ -197,10 +148,7 @@ const showSidebar = ref(true)
 const isDevelopment = import.meta.env.MODE === 'development'
 // --- 计算当前活动的会话 ---
 const currentSession = ref<ChatSession | null>(null)
-
 const baseURL = isDevelopment ? 'http://localhost:8090/blog/chat/completions' : '/api/chat/completions'
-
-
 const handleEnter = (e: KeyboardEvent) => {
     // 如果是移动端，Enter 通常换行；PC 端 Enter 发送
     if (window.innerWidth > 768 && !e.shiftKey) {
@@ -222,7 +170,6 @@ onMounted(() => {
         createNewChat()
     }
 })
-
 // --- 核心：保存到本地 ---
 const saveToLocal = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions.value))
@@ -271,24 +218,19 @@ const deleteSession = (id: string, event: Event) => {
 // --- 发送消息 ---
 const sendMessage = async () => {
     if (!userInput.value || isTyping.value || !currentSession.value) return
-
     const userContent = userInput.value
-
     // 1. 如果是新对话的第一条消息，更新标题
     if (currentSession.value.messages.length === 1 && currentSession.value.title === '新对话') {
         currentSession.value.title = userContent.substring(0, 15) + (userContent.length > 15 ? '...' : '')
     }
-
     currentSession.value.messages.push({ role: 'user', content: userContent })
     currentSession.value.updateTime = Date.now()
     userInput.value = ''
     isTyping.value = true
     await scrollToBottom()
-
     // 2. 准备 AI 占位
     currentSession.value.messages.push({ role: 'assistant', content: '' })
     const lastIndex = currentSession.value.messages.length - 1
-
     try {
         const response = await fetch(baseURL, {
             method: 'POST',
@@ -317,7 +259,6 @@ const sendMessage = async () => {
                     try {
                         const data = JSON.parse(dataStr)
                         const delta = data.choices[0].delta.content
-
                         // --- sendMessage 内部的流式解析部分 ---
                         if (delta && currentSession.value) {
                             // 修复：获取目标消息引用并进行空值判断
@@ -341,7 +282,6 @@ const sendMessage = async () => {
         isTyping.value = false
     }
 }
-
 const copyText = (text: string) => {
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(text)
@@ -353,28 +293,23 @@ const copyText = (text: string) => {
     }
 }
 
-
 const scrollToBottom = async () => {
     await nextTick()
     if (scrollRef.value) {
         scrollRef.value.scrollTop = scrollRef.value.scrollHeight
     }
 }
-
 // 兜底方案实现
 const fallbackCopy = (text: string) => {
     const textArea = document.createElement("textarea");
     textArea.value = text;
-
     // 确保 textarea 在页面上不可见但可操作
     textArea.style.position = "fixed";
     textArea.style.left = "-9999px";
     textArea.style.top = "0";
     document.body.appendChild(textArea);
-
     textArea.focus();
     textArea.select();
-
     try {
         const successful = document.execCommand('copy');
         if (successful) {
@@ -388,7 +323,6 @@ const fallbackCopy = (text: string) => {
 
     document.body.removeChild(textArea);
 }
-
 </script>
 
 <style scoped lang="scss">
