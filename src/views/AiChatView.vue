@@ -45,14 +45,14 @@
             </div>
             <div class="messages-wrapper" ref="scrollRef">
                 <div v-for="(msg, index) in currentSession.messages" :key="index" :class="['message-row', msg.role]">
-                    <div class="avatar">
+<!--                    <div class="avatar">
                         <el-icon v-if="msg.role === 'assistant'">
                             <Cpu/>
                         </el-icon>
                         <el-icon v-else>
                             <User/>
                         </el-icon>
-                    </div>
+                    </div>-->
                     <div class="message-content glass-panel">
                         <div class="text">
                             <MdPreview :modelValue="msg.content" theme="dark"/>
