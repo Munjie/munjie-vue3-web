@@ -5,8 +5,11 @@
 <!--                <el-icon :size="24" color="#6366f1">
                     <Moon/>
                 </el-icon>-->
-                <MetaLogo class="mlogo" size="20"  />
-                <span>Meta.dev</span>
+<!--                <el-icon :size="30">
+                    <IconJCloud />
+                </el-icon>-->
+<!--                <MetaLogo class="mlogo" size="20"  />-->
+                <span>JCloud</span>
             </div>
             <div class="actions">
 
@@ -114,7 +117,7 @@ import {useRoute} from 'vue-router'
 import { Search, Menu, CloseBold } from '@element-plus/icons-vue'
 import {ElInput} from 'element-plus';
 import router from "../router";
-import MetaLogo from '../components/MetaLogo.vue'
+
 
 const drawer = ref(false)
 const route = useRoute()
