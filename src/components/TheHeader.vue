@@ -85,36 +85,56 @@
                     </el-icon>
                 </div>
                 <el-drawer
-                        v-model="drawer"
-                        direction="rtl"
-                        size="30%"
-                        :append-to-body="true"
-                        :z-index="3000"
-                        class="mobile-drawer"
+                    v-model="drawer"
+                    direction="rtl"
+                    size="250px"
+                    :show-close="false"
+                    :append-to-body="true"
+                    :z-index="3000"
+                    class="mobile-drawer"
                 >
                     <template #header>
-                        <span class="drawer-title">MENU</span>
+                        <div class="drawer-custom-header">
+                            <span class="logo-text">JCloud</span>
+                            <el-icon class="close-icon" @click="drawer = false"><CloseBold /></el-icon>
+                        </div>
                     </template>
 
-                    <nav class="mobile-nav">
-                        <div class="mobile-user-card glass-panel" v-if="userStore.getToken">
-                            <el-avatar :size="50">{{ userStore.getUsername?.charAt(0) }}</el-avatar>
-                            <div class="info">
-                                <p class="name">{{ userStore.getUsername }}</p>
+                    <div class="mobile-menu-wrapper">
+                        <div class="mobile-user-profile" v-if="userStore.getToken">
+                            <div class="profile-content">
+                                <el-avatar :size="48" class="premium-avatar">
+                                    {{ userStore.getUsername?.charAt(0).toUpperCase() }}
+                                </el-avatar>
+                                <div class="user-meta">
+                                    <span class="user-name">{{ userStore.getUsername }}</span>
+                                </div>
                             </div>
                         </div>
-                        <div v-for="link in menuLinks" :key="link.path" class="mobile-nav-item">
-                            <router-link :to="link.path" @click="drawer = false">
-                                {{ link.name }}
+
+                        <nav class="mobile-nav-list">
+                            <router-link
+                                v-for="link in menuLinks"
+                                :key="link.path"
+                                :to="link.path"
+                                class="nav-item"
+                                @click="drawer = false"
+                            >
+                                <span class="nav-label">{{ link.name }}</span>
+                                <el-icon :size="14"><ArrowRight /></el-icon>
                             </router-link>
+                        </nav>
+
+                        <div class="mobile-drawer-footer">
+                            <button v-if="userStore.getToken" class="premium-logout-btn" @click="handleLogout">
+                                <el-icon :size="16"><SwitchButton /></el-icon>
+                                <span>退出登录</span>
+                            </button>
+                            <button v-else class="premium-login-btn" @click="router.push('/login')">
+                                立即登录
+                            </button>
                         </div>
-                        <div v-if="userStore.getToken" class="mobile-logout" @click="handleLogout">
-                            退出登录
-                        </div>
-                        <div v-else class="mobile-logout" @click="router.push('/login')">
-                            前往登录
-                        </div>
-                    </nav>
+                    </div>
                 </el-drawer>
             </div>
         </div>
@@ -143,7 +163,7 @@
 <script setup lang="ts">
 import {ref, watch, nextTick} from 'vue'
 import {useRoute} from 'vue-router'
-import { Search, Menu, CloseBold } from '@element-plus/icons-vue'
+import { Search, Menu, CloseBold, SwitchButton, ArrowRight } from '@element-plus/icons-vue'
 import {ElInput} from 'element-plus';
 import router from "../router";
 import { useUserStore } from '../stores'
@@ -567,6 +587,245 @@ watch(
 
     .logout-item {
         color: #f56c6c !important;
+    }
+}
+
+/* 抽屉整体背景优化 */
+:deep(.mobile-drawer) {
+    background-color: #0f1115 !important; /* 更深的底色 */
+
+    .el-drawer__header {
+        margin-bottom: 0;
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+}
+
+/*.drawer-custom-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    .logo-text {
+        font-weight: 800;
+        background: linear-gradient(to right, #6366f1, #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+}*/
+.drawer-custom-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+
+    .logo-text {
+        font-size: 1.2rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #6366f1, #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* 优化关闭图标样式 */
+    .close-icon {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.5); /* 半透明灰色 */
+        cursor: pointer;
+        transition: all 0.3s;
+        padding: 5px;
+        border-radius: 8px;
+
+        &:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1); /* 悬浮时有个小底色 */
+            transform: rotate(90deg); /* 旋转特效，更有动感 */
+        }
+    }
+}
+
+
+.mobile-menu-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+/* 用户信息卡片优化 */
+.mobile-user-profile {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+
+    .profile-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .premium-avatar {
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .user-meta {
+        display: flex;
+        flex-direction: column;
+        .user-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        .user-status {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 4px;
+        }
+    }
+}
+
+/* 导航项优化 */
+.mobile-nav-list {
+    flex: 1;
+    .nav-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.7);
+        transition: all 0.3s;
+
+        .nav-label { font-size: 1.1rem; }
+
+        &:active {
+            color: #6366f1;
+            padding-left: 10px;
+        }
+    }
+}
+
+/* 退出按钮优化 */
+.mobile-drawer-footer {
+    padding-bottom: env(safe-area-inset-bottom); // 适配苹果刘海屏底部
+
+    .premium-logout-btn {
+        width: 100%;
+        height: 54px;
+        background: rgba(245, 108, 108, 0.1);
+        border: 1px solid rgba(245, 108, 108, 0.2);
+        border-radius: 16px;
+        color: #f56c6c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &:active {
+            background: rgba(245, 108, 108, 0.2);
+            transform: scale(0.98);
+        }
+    }
+
+    .premium-login-btn {
+        @extend .premium-logout-btn;
+        background: rgba(99, 102, 241, 0.1);
+        border-color: rgba(99, 102, 241, 0.2);
+        color: #6366f1;
+    }
+}
+
+/* 抽屉整体 */
+:deep(.mobile-drawer) {
+    background-color: #0f1115 !important;
+
+    .el-drawer__header {
+        padding: 15px 20px; /* 缩小头部高度 */
+        margin-bottom: 0;
+    }
+}
+
+.mobile-menu-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px 20px; /* 减小内边距 */
+}
+
+/* 用户卡片缩小 */
+.mobile-user-profile {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px; /* 稍微减小圆角 */
+    padding: 15px; /* 缩小内边距 */
+    margin: 15px 0 20px; /* 减小外边距 */
+
+    .premium-avatar {
+        /* 头像由 60px 缩小到 48px */
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 18px; /* 缩小字母大小 */
+    }
+
+    .user-meta {
+        .user-name {
+            font-size: 1rem; /* 从 1.2rem 缩小 */
+            font-weight: 600;
+        }
+        .user-status {
+            font-size: 0.75rem; /* 缩小状态文字 */
+            opacity: 0.5;
+        }
+    }
+}
+
+/* 导航列表缩小 */
+.mobile-nav-list {
+    .nav-item {
+        padding: 14px 0; /* 从 18px 缩小，间距更紧凑 */
+        color: rgba(255, 255, 255, 0.6);
+
+        .nav-label {
+            font-size: 0.95rem; /* 从 1.1rem 缩小 */
+        }
+
+        &:active {
+            color: #6366f1;
+            padding-left: 5px; /* 减小点击位移量 */
+        }
+    }
+}
+
+/* 退出按钮缩小 */
+.mobile-drawer-footer {
+    padding-top: 10px;
+
+    .premium-logout-btn, .premium-login-btn {
+        height: 44px; /* 从 54px 缩小到 44px */
+        border-radius: 12px; /* 减小圆角 */
+        font-size: 0.9rem; /* 缩小字体 */
+        gap: 8px;
+    }
+}
+
+/* 自定义关闭按钮也同步缩小 */
+.drawer-custom-header {
+    .logo-text { font-size: 1.1rem; }
+    .close-icon {
+        font-size: 1.1rem;
+        color: #666;
     }
 }
 </style>
