@@ -111,7 +111,7 @@
                         <div v-if="userStore.getToken" class="mobile-logout" @click="handleLogout">
                             退出登录
                         </div>
-                        <div v-else class="mobile-logout" @click="router.push('/ai-chat')">
+                        <div v-else class="mobile-logout" @click="router.push('/login')">
                             前往登录
                         </div>
                     </nav>

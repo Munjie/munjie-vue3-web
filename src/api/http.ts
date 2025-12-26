@@ -6,6 +6,7 @@ import axios, {
 } from 'axios';
 import {ElMessage} from "element-plus";
 import router from "../router";
+import {useUserStore} from "../stores";
 
 export interface Result<T = any> {
     code: number;
@@ -27,6 +28,27 @@ const service: AxiosInstance = axios.create({
 // 请求拦截器（完美版）
 service.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
+        const userStore = useUserStore();
+        // 优先从 Pinia 拿 token（推荐），没有再 fallback 到 localStorage
+        let token = userStore.getToken || localStorage.getItem('token') || ''
+        // 如果还是没有，说明真的没登录 → 拦截请求 + 跳转登录
+        if (!token) {
+            // 避免在登录页重复跳转
+            if (router.currentRoute.value.name !== 'login') {
+                ElMessage.closeAll()
+                // 清除残留的无效状态
+                userStore.logout?.()
+                // 跳转登录并带上当前页面地址（登录成功后自动跳回来）
+                Promise.reject().then(() =>   router.push({
+                    name: 'login',
+                    query: {
+                        redirect: router.currentRoute.value.fullPath,
+                    },
+                }));
+            }
+        }
+        // 有 token 就塞进 header（标准 Bearer 格式）
+        config.headers.Authorization = `Bearer ${token}`
         return config
     },
     (error: AxiosError) => {

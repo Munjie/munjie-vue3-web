@@ -141,7 +141,7 @@ const performLogin = async (token: string, userId: number, username: string) => 
     userStore.setUserid(userId)
     userStore.setToken(token)
     ElMessage.success('登录成功！')
-    await router.push('/main')
+    await router.push('/')
 }
 
 
