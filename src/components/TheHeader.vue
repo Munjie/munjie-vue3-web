@@ -2,13 +2,6 @@
     <header class="site-header glass-panel">
         <div class="container">
             <div class="logo">
-<!--                <el-icon :size="24" color="#6366f1">
-                    <Moon/>
-                </el-icon>-->
-<!--                <el-icon :size="30">
-                    <IconJCloud />
-                </el-icon>-->
-<!--                <MetaLogo class="mlogo" size="20"  />-->
                 <span>JCloud</span>
             </div>
             <div class="actions">
@@ -51,10 +44,34 @@
                     </el-popover>
 
                     <router-link to="/">首页</router-link>
-                    <router-link to="/ai-chat">AI</router-link>
+                    <router-link to="/chat">AI</router-link>
                     <router-link to="/tech">技术</router-link>
                     <router-link to="/life">生活</router-link>
                     <router-link to="/about">关于</router-link>
+
+                    <div class="user-status-pc">
+                        <template v-if="userStore.getToken">
+                            <el-dropdown trigger="click">
+                                <div class="avatar-wrapper">
+                                    <el-avatar :size="32" class="custom-avatar">
+                                        {{ userStore.getUsername?.charAt(0) || 'U' }}
+                                    </el-avatar>
+                                    <span class="user-name">{{ userStore.getUsername }}</span>
+                                </div>
+                                <template #dropdown>
+                                    <el-dropdown-menu class="dark-dropdown">
+                                        <el-dropdown-item @click="router.push('/chat')">我的聊天</el-dropdown-item>
+                                        <el-dropdown-item divided @click="handleLogout" class="logout-item">
+                                            <el-icon><SwitchButton /></el-icon>退出登录
+                                        </el-dropdown-item>
+                                    </el-dropdown-menu>
+                                </template>
+                            </el-dropdown>
+                        </template>
+                        <template v-else>
+                            <el-button type="primary" size="small" round @click="router.push('/login')">登录</el-button>
+                        </template>
+                    </div>
                 </nav>
 
             </div>
@@ -80,10 +97,22 @@
                     </template>
 
                     <nav class="mobile-nav">
+                        <div class="mobile-user-card glass-panel" v-if="userStore.getToken">
+                            <el-avatar :size="50">{{ userStore.getUsername?.charAt(0) }}</el-avatar>
+                            <div class="info">
+                                <p class="name">{{ userStore.getUsername }}</p>
+                            </div>
+                        </div>
                         <div v-for="link in menuLinks" :key="link.path" class="mobile-nav-item">
                             <router-link :to="link.path" @click="drawer = false">
                                 {{ link.name }}
                             </router-link>
+                        </div>
+                        <div v-if="userStore.getToken" class="mobile-logout" @click="handleLogout">
+                            退出登录
+                        </div>
+                        <div v-else class="mobile-logout" @click="router.push('/ai-chat')">
+                            前往登录
                         </div>
                     </nav>
                 </el-drawer>
@@ -117,7 +146,10 @@ import {useRoute} from 'vue-router'
 import { Search, Menu, CloseBold } from '@element-plus/icons-vue'
 import {ElInput} from 'element-plus';
 import router from "../router";
+import { useUserStore } from '../stores'
+import {logout} from "../api/login.ts"; // 确保路径正确指向你的 Pinia Store
 
+const userStore = useUserStore()
 
 const drawer = ref(false)
 const route = useRoute()
@@ -126,6 +158,14 @@ const route = useRoute()
 const searchVisible = ref(false)
 const searchText = ref('')
 const searchInputRef = ref<InstanceType<typeof ElInput> | null>(null);
+
+// 退出登录
+const handleLogout = () => {
+    logout().then(() => {
+        userStore.logout()
+    })
+}
+watch(() => route.path, () => { if (drawer.value) drawer.value = false })
 
 // 核心逻辑：监听 Popover 状态，自动聚焦输入框
 watch(searchVisible, (newVal) => {
@@ -177,19 +217,6 @@ const handleMobileSearch = () => {
     }
     searchText.value = '' // 清空输入框
 }
-
-// 处理搜索逻辑
-/*const handleSearch = () => {
-    if (searchText.value.trim()) {
-        console.log('执行搜索:', searchText.value)
-
-        // 1. router.push({ path: '/search', query: { q: searchText.value } })
-        // 2. 清空 searchText.value
-
-        // 搜索完成后关闭 Popover
-        searchVisible.value = false
-    }
-}*/
 // 搜索 Popover 状态 (桌面)
 // 新增：移动端搜索状态
 const isMobileSearchActive = ref(false)
@@ -205,19 +232,9 @@ const toggleMobileSearch = () => {
     }
 }
 
-// 移动端搜索逻辑
-/*const handleMobileSearch = () => {
-    if (searchText.value.trim()) {
-        console.log('执行移动端搜索:', searchText.value)
-        // 执行搜索路由跳转
-        // 搜索完成后关闭搜索栏
-        isMobileSearchActive.value = false
-        searchText.value = ''
-    }
-}*/
 const menuLinks = [
     {name: '首页', path: '/'},
-    {name: 'AI', path: '/ai-chat'},
+    {name: 'AI', path: '/chat'},
     {name: '技术', path: '/tech'},
     {name: '生活', path: '/life'},
     {name: '关于', path: '/about'}
@@ -465,5 +482,91 @@ watch(
 
 .dark .mlogo {
     color: #6366f1;
+}
+
+/* --- 新增：用户状态样式 --- */
+.user-status-pc {
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+
+    .avatar-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 20px;
+        transition: background 0.3s;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-name {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+    }
+}
+
+.custom-avatar {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: #fff;
+    font-weight: bold;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 移动端抽屉内的用户卡片 */
+.mobile-user-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+
+    .info {
+        .name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+            margin: 0;
+        }
+        .role {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 4px;
+        }
+    }
+}
+
+.mobile-logout {
+    margin-top: 30px;
+    padding: 12px;
+    text-align: center;
+    color: #f56c6c;
+    border: 1px solid rgba(245, 108, 108, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* --- 下拉菜单暗黑样式 --- */
+:deep(.dark-dropdown) {
+    background-color: #1a1a1a !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+    .el-dropdown-menu__item {
+        color: #ccc !important;
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            color: var(--accent-color) !important;
+        }
+    }
+
+    .logout-item {
+        color: #f56c6c !important;
+    }
 }
 </style>

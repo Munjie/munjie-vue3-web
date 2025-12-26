@@ -186,7 +186,7 @@ const showSidebar = ref(true)
 const isDevelopment = import.meta.env.MODE === 'development'
 // --- 计算当前活动的会话 ---
 const currentSession = ref<ChatSession | null>(null)
-const baseURL = isDevelopment ? 'http://localhost:8090/blog/chat/completions' : '/api/chat/completions'
+const baseURL = isDevelopment ? 'http://localhost:8090/chat/completions' : '/api/chat/completions'
 
 // --- 新增响应式状态 ---
 const isMobile = ref(false)
