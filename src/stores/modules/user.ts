@@ -72,7 +72,7 @@ export const useUserStore = defineStore('useAllData', {
         // 登出方法
         logout() {
             this.resetStore()
-            router.push({ name: 'login' })
+            router.push('/')
         },
     },
     // Persist 配置（修正：移除 enabled 和 strategies，使用 pick）
