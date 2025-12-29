@@ -252,14 +252,28 @@ const handlePostLike = async () => {
 }
 
 // 处理评论点赞
-const handleCommentLike = (item: any) => {
+const handleCommentLike = async (item: any) => {
     if (!userStore.getToken) {
         ElMessage.warning('登录后即可点赞评论')
         return
     }
+    const prevLiked = item.isLiked;
+    const prevCount = item.likes;
     item.isLiked = !item.isLiked
     item.likes = (item.likes || 0) + (item.isLiked ? 1 : -1)
-    updateCommentLike(item.id)
+    try {
+
+        const res = await updateCommentLike(item.id);
+        item.isLiked = res.liked;
+        item.likes = res.likeCount;
+
+    } catch (error) {
+        // 失败时回滚到操作前状态
+        item.isLiked = prevLiked;
+        item.likes = prevCount;
+        ElMessage.error('操作失败，请重试');
+    }
+
 }
 
 const addEmoji = (emoji: string, type: 'main' | 'reply') => {
@@ -303,7 +317,8 @@ const submitComment = async (parentId: number) => {
     }
     let contentForm = {
         content: content,
-        articleId: post.value?.id
+        articleId: post.value?.id,
+        parentId: parentId
     }
 
     try {
