@@ -151,7 +151,8 @@
                             </div>
                         </div>
                     </div>
-                    <el-empty v-if="commentList.length === 0" description="暂无评论"/>
+                    <el-empty v-if="commentList.length === 0" description="暂无评论" :image-size="40"
+                              style="padding: 1px 0;"/>
                 </div>
             </div>
 
