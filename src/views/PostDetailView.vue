@@ -36,9 +36,10 @@
                 <div class="post-actions-bar">
                     <div class="action-item-big" :class="{ 'active': postLiked }" @click="handlePostLike">
                         <div class="icon-circle">
-                            <el-icon>
+<!--                            <el-icon>
                                 <Pointer/>
-                            </el-icon>
+                            </el-icon>-->
+                            <span class="custom-icon" v-html="ThumbUpIcon"></span>
                         </div>
                         <span class="count">{{ postLikeCount }} 人点赞</span>
                     </div>
@@ -99,7 +100,7 @@
                             <div class="comment-actions">
                                   <span class="action-btn like" :class="{ 'is-liked': item.isLiked }"
                                         @click="handleCommentLike(item)">
-                            <el-icon><Pointer/></el-icon> {{ item.likes || '赞' }}
+                           <span class="mini-icon" v-html="ThumbUpIcon"></span> {{ item.likes || '赞' }}
                         </span>
                                 <span class="reply-btn" @click="toggleReply(item.id)">回复</span>
                             </div>
@@ -173,8 +174,15 @@ import type {ArticleVO} from "../types/article.ts";
 import router from "../router";
 import {ElMessage} from "element-plus";
 import {useUserStore} from '../stores'
-import {getComments, addComment} from "../api/comment.ts"
-import {Pointer, ChatDotRound, Calendar, View, ChatLineRound} from '@element-plus/icons-vue'
+import {getComments, addComment, updateArticleLike, updateCommentLike} from "../api/comment.ts"
+import {ChatDotRound, Calendar, View, ChatLineRound} from '@element-plus/icons-vue'
+
+// 定义大拇指 SVG (Heroicons 风格，非常专业美观)
+const ThumbUpIcon = `
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a.75.75 0 01.75-.75A2.25 2.25 0 0116.5 4.5c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 01-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 00-1.423-.23H5.904M14.25 9h2.25M5.904 18.75c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 01-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 10.203 4.167 9.75 5 9.75h1.053c.472 0 .745.556.5.96a8.958 8.958 0 00-1.302 4.665c0 1.194.232 2.333.654 3.375z" />
+</svg>
+`
 
 const userStore = useUserStore()
 const route = useRoute()
@@ -188,10 +196,9 @@ const replyContent = ref('')
 const commentForm = ref({content: ''})
 // 常用表情列表
 const emojiList = ['😃', '😁', '😅', '🤣', '😘', '🥰', '😗', '😋', '😛', '😜', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '😫', '😲', '😳', '🥺', '😢', '😭', '😱', '😖', '😴', '👻', '💀', '👽', '🤖', '🎃', '😺', '🤲', '👍', '👎', '👊', '✊', '🤛', '🤜', '🤞', '✌️', '🤘', '👌', '👈', '👉', '👆', '👇', '✋', '🤚', '👋', '👏', '💪', '🙏', '🧠', '👀', '❤️', '🔥', '✨', '🌟', '🌈']
-
 // 文章点赞状态
 const postLiked = ref(false)
-const postLikeCount = ref(128)
+const postLikeCount = ref(0)
 onMounted(async () => {
     const postId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
     if (!postId) {
@@ -200,6 +207,8 @@ onMounted(async () => {
     post.value = await getArticleById(postId)
     await nextTick();
     contentLoaded.value = true;
+    postLikeCount.value = post.value?.likes;
+    postLiked.value = post.value?.postLiked;
     await loadComments()
 })
 watch(post, async (newPost) => {
@@ -210,14 +219,36 @@ watch(post, async (newPost) => {
 });
 
 // 处理文章点赞
-const handlePostLike = () => {
+const handlePostLike = async () => {
     if (!userStore.getToken) {
         ElMessage.warning('登录后即可点赞支持哦')
         return
     }
-    postLiked.value = !postLiked.value
-    postLikeCount.value += postLiked.value ? 1 : -1
-    // 调用 API: updateArticleLike(post.value.id, postLiked.value)
+    const prevLiked = postLiked.value;
+    const prevCount = postLikeCount.value;
+    postLiked.value = !postLiked.value;
+    postLikeCount.value += postLiked.value ? 1 : -1;
+
+    try {
+        const res = await updateArticleLike(post.value?.id);
+        postLiked.value = res.liked;
+        postLikeCount.value = res.likeCount;
+
+    } catch (error) {
+        // 失败时回滚到操作前状态
+        postLiked.value = prevLiked;
+        postLikeCount.value = prevCount;
+        ElMessage.error('操作失败，请重试');
+    }
+    // 成功反馈
+    if (postLiked.value) {
+        ElMessage({
+            message: '感谢点赞！',
+            type: 'success',
+            plain: true,
+            duration: 1000
+        })
+    }
 }
 
 // 处理评论点赞
@@ -228,7 +259,7 @@ const handleCommentLike = (item: any) => {
     }
     item.isLiked = !item.isLiked
     item.likes = (item.likes || 0) + (item.isLiked ? 1 : -1)
-    // 调用 API: updateCommentLike(item.id, item.isLiked)
+    updateCommentLike(item.id)
 }
 
 const addEmoji = (emoji: string, type: 'main' | 'reply') => {
@@ -241,17 +272,9 @@ const addEmoji = (emoji: string, type: 'main' | 'reply') => {
 // 模拟加载评论数据
 const loadComments = async () => {
     commentsLoading.value = true
-    commentList.value = await getComments( post.value?.id)
     // 模拟数据结构：
-    setTimeout(() => {
-        commentList.value = [
-            {
-                id: 1, username: '路人甲', content: 'goooooooooooood',
-                createTime: '2023-01-20', children: [
-                    {id: 101, username: 'mwj', content: '6666666666666！', createTime: '2023-01-21'}
-                ]
-            }
-        ]
+    setTimeout(async () => {
+        commentList.value = await getComments(post.value?.id)
         commentsLoading.value = false
     }, 500)
 }
@@ -279,15 +302,13 @@ const submitComment = async (parentId: number) => {
         return
     }
     let contentForm = {
-        content: content
+        content: content,
+        articleId: post.value?.id
     }
 
     try {
-
         await addComment(contentForm)
-
         ElMessage.success('发布成功')
-
         // 清空输入
         if (parentId === 0) {
             commentForm.value.content = ''
@@ -839,5 +860,82 @@ const submitComment = async (parentId: number) => {
   .post-actions-bar {
     margin-top: 30px;
   }
+}
+
+/* 统一 SVG 图标样式 */
+.custom-icon, .mini-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    :deep(svg) {
+        width: 1em;
+        height: 1em;
+        fill: currentColor; // 允许通过 color 属性控制颜色
+    }
+}
+
+/* 1. 文章底部大按钮 */
+.action-item-big {
+    .icon-circle {
+        font-size: 32px; // 稍微调大一点
+        color: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    &.active {
+        .icon-circle {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: #fff;
+            border: none;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+            transform: scale(1.15) translateY(-5px); // 激活时向上跳动一下
+        }
+        .count {
+            color: #fff;
+            font-weight: 600;
+        }
+    }
+
+    &:hover:not(.active) .icon-circle {
+        border-color: #6366f1;
+        color: #6366f1;
+        background: rgba(99, 102, 241, 0.05);
+    }
+}
+
+/* 2. 评论区小点赞按钮 */
+.comment-actions {
+    .action-btn.like {
+        .mini-icon {
+            font-size: 16px;
+            margin-right: 4px;
+            transition: transform 0.2s;
+        }
+
+        &:hover .mini-icon {
+            transform: rotate(-15px) scale(1.2); // 悬浮时大拇指歪一下，很有趣
+        }
+
+        &.is-liked {
+            color: #a855f7; // 激活时使用紫色
+            font-weight: bold;
+
+            .mini-icon {
+                transform: scale(1.2);
+                filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.5));
+            }
+        }
+    }
+}
+
+/* 3. 布局优化：拉开间距（补充之前的需求） */
+.comment-section {
+    margin-top: 50px; // 与正文拉开
+    .comment-input-wrapper {
+        margin-bottom: 50px; // 与评论列表拉开
+    }
 }
 </style>

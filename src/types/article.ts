@@ -10,4 +10,6 @@ export interface ArticleVO {
     createTime: string
     views: number
     tags: []
+    likes: number
+    postLiked: boolean
 }
