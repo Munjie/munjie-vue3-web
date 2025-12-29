@@ -2,7 +2,7 @@
     <div class="home-view">
         <section class="hero">
             <div class="hero-content">
-                <h1 class="animate-fade-up">介由心生&nbsp;&nbsp;云集视界</h1>
+                <h1 class="animate-fade-up">探索数字深渊</h1>
                 <p class="animate-fade-up delay-1">Vue3 / TypeScript / Design</p>
             </div>
         </section>

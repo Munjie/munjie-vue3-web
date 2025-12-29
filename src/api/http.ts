@@ -117,7 +117,10 @@ service.interceptors.response.use(
             default:
                 message = `连接出错(${status})!`;
         }
-        ElMessage.error(message)
+        console.log(message)
+        if ([403, 404, 500, 502, 503, 504].includes(status as number)) {
+            router.push(`/exception/${status}`);
+        }
         return Promise.reject(error);
     }
 );

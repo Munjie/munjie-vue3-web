@@ -24,6 +24,17 @@ const router = createRouter({
             path: '/login',
             name: 'login',
             component: () => import('../views/login/index.vue')
+        },
+        {
+            path: '/exception/:code',
+            name: 'Exception',
+            component: () => import('../views/ExceptionView.vue'),
+            meta: { title: '异常页面' }
+        },
+        // 捕获所有未定义路由跳转到 404
+        {
+            path: '/:pathMatch(.*)*',
+            redirect: '/exception/404'
         }
     ],
     scrollBehavior() {

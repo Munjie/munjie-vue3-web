@@ -439,7 +439,6 @@ const fetchAllModel = async () => {
         }
     } catch (error) {
         modelOptions.value = []
-        ElMessage.error('加载模型列表失败')
     }
 }
 </script>
