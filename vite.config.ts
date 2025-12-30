@@ -9,7 +9,7 @@ const pathSrc = path.resolve(__dirname, "src");
 export default defineConfig((mode): any =>{
   const env = loadEnv(mode.mode, process.cwd());
   return {
-    base: "./",
+    base: "/",
     root: process.cwd(), // 绝对路径
     server: {
       host: "0.0.0.0",
