@@ -36,9 +36,6 @@
                 <div class="post-actions-bar">
                     <div class="action-item-big" :class="{ 'active': postLiked }" @click="handlePostLike">
                         <div class="icon-circle">
-<!--                            <el-icon>
-                                <Pointer/>
-                            </el-icon>-->
                             <span class="custom-icon" v-html="ThumbUpIcon"></span>
                         </div>
                         <span class="count">{{ postLikeCount }} 人点赞</span>
@@ -66,25 +63,28 @@
                     <div class="input-footer">
                         <el-popover
                                 placement="top-start"
-                                :width="260"
+                                :width="300"
                                 trigger="click"
-                                popper-class="emoji-popover"
+                                popper-class="custom-emoji-box"
                         >
                             <template #reference>
                                 <div class="emoji-trigger-btn">
                                     <el-icon :size="20">
-                                        <EmojiSmile />
+                                        <EmojiSmile/>
                                     </el-icon>
                                 </div>
                             </template>
+                            <div class="emoji-scroll-container">
                             <div class="emoji-list">
                 <span v-for="emoji in emojiList" :key="emoji" @click="addEmoji(emoji, 'main')">
                     {{ emoji }}
                 </span>
                             </div>
+                            </div>
                         </el-popover>
-
-                        <el-button type="primary" round @click="submitComment(0)" :disabled="!commentForm.content.trim()">发表评论</el-button>
+                        <el-button type="primary" round @click="submitComment(0)"
+                                   :disabled="!commentForm.content.trim()">发表评论
+                        </el-button>
                     </div>
                 </div>
 
@@ -104,21 +104,26 @@
                         </span>
                                 <span class="reply-btn" @click="toggleReply(item.id)">回复</span>
                             </div>
-
-                            <div v-if="replyId === item.id" class="reply-input-wrapper">
+                            <div v-if="replyId === item.id" class="reply-input-wrapper glass-panel">
                                 <el-input
                                         v-model="replyContent"
-                                        size="small"
-                                        placeholder="回复内容..."
+                                        type="textarea"
+                                        :rows="2"
+                                        placeholder="写下你的回复..."
                                         class="dark-input"
+                                        maxlength="100"
                                 />
                                 <div class="input-footer mini">
-                                    <el-popover placement="top-start" :width="220" trigger="click"
-                                                popper-class="emoji-popover">
+                                    <el-popover
+                                            placement="top-start"
+                                            :width="280"
+                                            trigger="click"
+                                            popper-class="custom-emoji-box"
+                                    >
                                         <template #reference>
                                             <div class="emoji-trigger-btn mini">
-                                                <el-icon :size="16">
-                                                    <EmojiSmile />
+                                                <el-icon :size="18">
+                                                    <EmojiSmile/>
                                                 </el-icon>
                                             </div>
                                         </template>
@@ -130,8 +135,13 @@
                                     </el-popover>
                                     <div class="right-btns">
                                         <el-button size="small" link @click="replyId = 0">取消</el-button>
-                                        <el-button size="small" type="primary" round @click="submitComment(item.id)" :disabled="!replyContent.trim()">
-                                            发送
+                                        <el-button
+                                                size="small"
+                                                type="primary"
+                                                round
+                                                @click="submitComment(item.id)"
+                                                :disabled="!replyContent.trim()"
+                                        >发送
                                         </el-button>
                                     </div>
                                 </div>
@@ -178,6 +188,7 @@ import {useUserStore} from '../stores'
 import {getComments, addComment, updateArticleLike, updateCommentLike} from "../api/comment.ts"
 import {ChatDotRound, Calendar, View} from '@element-plus/icons-vue'
 import EmojiSmile from '../components/icons/SmilSvg.vue'
+
 const ThumbUpIcon = `
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
   <path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a.75.75 0 01.75-.75A2.25 2.25 0 0116.5 4.5c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 01-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 00-1.423-.23H5.904M14.25 9h2.25M5.904 18.75c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 01-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 10.203 4.167 9.75 5 9.75h1.053c.472 0 .745.556.5.96a8.958 8.958 0 00-1.302 4.665c0 1.194.232 2.333.654 3.375z" />
@@ -800,128 +811,216 @@ const submitComment = async (parentId: number) => {
 
 /* 统一 SVG 图标样式 */
 .custom-icon, .mini-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
-    :deep(svg) {
-        width: 1em;
-        height: 1em;
-        fill: currentColor; // 允许通过 color 属性控制颜色
-    }
+  :deep(svg) {
+    width: 1em;
+    height: 1em;
+    fill: currentColor; // 允许通过 color 属性控制颜色
+  }
 }
 
 /* 1. 文章底部大按钮 */
 .action-item-big {
+  .icon-circle {
+    font-size: 32px; // 稍微调大一点
+    color: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  &.active {
     .icon-circle {
-        font-size: 32px; // 稍微调大一点
-        color: rgba(255, 255, 255, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.02);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: #fff;
+      border: none;
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+      transform: scale(1.15) translateY(-5px); // 激活时向上跳动一下
     }
 
-    &.active {
-        .icon-circle {
-            background: linear-gradient(135deg, #6366f1, #a855f7);
-            color: #fff;
-            border: none;
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
-            transform: scale(1.15) translateY(-5px); // 激活时向上跳动一下
-        }
-        .count {
-            color: #fff;
-            font-weight: 600;
-        }
+    .count {
+      color: #fff;
+      font-weight: 600;
     }
+  }
 
-    &:hover:not(.active) .icon-circle {
-        border-color: #6366f1;
-        color: #6366f1;
-        background: rgba(99, 102, 241, 0.05);
-    }
+  &:hover:not(.active) .icon-circle {
+    border-color: #6366f1;
+    color: #6366f1;
+    background: rgba(99, 102, 241, 0.05);
+  }
 }
 
 /* 2. 评论区小点赞按钮 */
 .comment-actions {
-    .action-btn.like {
-        .mini-icon {
-            font-size: 16px;
-            margin-right: 4px;
-            transition: transform 0.2s;
-        }
-
-        &:hover .mini-icon {
-            transform: rotate(-15px) scale(1.2);
-        }
-
-        &.is-liked {
-            color: #a855f7; // 激活时使用紫色
-            font-weight: bold;
-
-            .mini-icon {
-                transform: scale(1.2);
-                filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.5));
-            }
-        }
+  .action-btn.like {
+    .mini-icon {
+      font-size: 16px;
+      margin-right: 4px;
+      transition: transform 0.2s;
     }
+
+    &:hover .mini-icon {
+      transform: rotate(-15px) scale(1.2);
+    }
+
+    &.is-liked {
+      color: #a855f7; // 激活时使用紫色
+      font-weight: bold;
+
+      .mini-icon {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.5));
+      }
+    }
+  }
 }
 
 /* 3. 布局优化：拉开间距（补充之前的需求） */
 .comment-section {
-    margin-top: 50px; // 与正文拉开
-    .comment-input-wrapper {
-        margin-bottom: 50px; // 与评论列表拉开
-    }
+  margin-top: 50px; // 与正文拉开
+  .comment-input-wrapper {
+    margin-bottom: 50px; // 与评论列表拉开
+  }
 }
 
-/* 表情面板容器美化 */
-:deep(.emoji-popover) {
-  background: rgba(25, 25, 25, 0.95) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  backdrop-filter: blur(15px);
-  border-radius: 12px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
-  padding: 12px !important;
+/* --- 回复框高度与间距优化 --- */
+.reply-input-wrapper {
+  margin-top: 15px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  animation: fadeInDown 0.3s ease-out; // 增加一个小动画
 
+  .dark-input {
+    :deep(.el-textarea__inner) {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      min-height: 60px !important; // 确保回复框不会太扁
+    }
+  }
+}
+
+/* --- 输入框底部工具栏优化 --- */
+.input-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+
+  &.mini {
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* --- 移动端体验专项提升 --- */
+@media (max-width: 768px) {
+  .container {
+    width: 95%; // 移动端侧边间距缩小
+  }
+
+  .comment-section {
+    padding: 20px 15px; // 缩小内边距
+  }
+
+  .reply-input-wrapper {
+    padding: 10px;
+
+    .right-btns .el-button {
+      padding: 8px 16px; // 按钮更易点击
+    }
+  }
+
+  // 隐藏移动端不必要的修饰
+  .emoji-trigger-btn {
+    width: 40px;
+    height: 40px; // 增大点击热区
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 针对弹出层内容的全局样式（因为 teleport 到了 body） */
+.custom-emoji-box {
+  background: rgba(30, 30, 30, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 12px !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px);
+
+  /* 设置滚动容器 */
+  .emoji-scroll-container {
+    max-height: 250px; /* 超过这个高度就开始滚动 */
+    overflow-y: auto; /* 开启上下滚动 */
+    padding-right: 5px;
+
+    /* 美化滚动条 */
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+  }
+
+  /* 使用 Grid 布局解决间隔问题 */
   .emoji-list {
     display: grid;
-    /* PC 端默认每行 8 个，间距 10px */
-    grid-template-columns: repeat(8, 1fr);
-    gap: 10px;
-    max-height: 250px;
-    overflow-y: auto;
+    /* 核心：minmax 决定了每个表情的最小宽度。PC端建议 42px，移动端自适应 */
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    gap: 12px; /* 这里可以精准控制间隔，不管是多大表情都不会挨着 */
 
     span {
-      font-size: 100px; // 稍微调大表情图标
+      /* 核心：放大表情 */
+      font-size: 1.5rem !important; /* 调整这里！2rem 很大，可以根据需要微调 */
+      /* PC端手势：变成手 */
       cursor: pointer;
+
       display: flex;
       align-items: center;
       justify-content: center;
-      aspect-ratio: 1 / 1; // 保持正方形，方便点击
+      aspect-ratio: 1 / 1; /* 保持正方形，点击热区更大 */
       border-radius: 8px;
       transition: all 0.2s;
+      user-select: none; /* 防止频繁点击时选中文字蓝块 */
 
       &:hover {
         background: rgba(255, 255, 255, 0.1);
-        transform: scale(1.15);
+        transform: scale(1.2); /* 悬浮放大 */
       }
-
-      /* 适配移动端：增加点击区域面积，减少每行个数 */
-      @media (max-width: 768px) {
-        font-size: 1.6rem;
-        padding: 5px;
-      }
-    }
-  }
-
-  /* 针对移动端弹窗宽度的自适应 */
-  @media (max-width: 768px) {
-    width: 90vw !important; // 移动端占据屏幕大部分宽度
-    .emoji-list {
-      grid-template-columns: repeat(6, 1fr); // 移动端每行 6 个，更方便手指点击
-      gap: 12px;
     }
   }
 }
+
+/* 移动端特殊增强 */
+@media (max-width: 768px) {
+  .custom-emoji-box {
+    width: 90vw !important; /* 移动端宽度占满 */
+    .emoji-grid {
+      grid-template-columns: repeat(6, 1fr); /* 移动端每行固定 6 个 */
+      span {
+        font-size: 2.2rem !important; /* 移动端手指大，表情也要大点 */
+      }
+    }
+  }
+}
+
 </style>
+
+
