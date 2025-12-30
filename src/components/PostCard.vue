@@ -1,5 +1,5 @@
 <template>
-    <div class="post-card glass-panel" @click="$router.push(`/post/${post.id}`)">
+    <div class="post-card glass-panel" @click="goToDetail(post)">
         <div class="card-image" :style="{ backgroundImage: `url(${post.image})` }"></div>
         <div class="card-content">
             <div class="meta">
@@ -9,7 +9,10 @@
             <h3>{{ post.title }}</h3>
             <p>{{ post.introduction }}</p>
             <div class="footer">
-                <el-button link type="primary">阅读全文 <el-icon><ArrowRight /></el-icon></el-button>
+                <el-button link type="primary" @click.stop="goToDetail(post)">
+                    阅读全文
+                    <el-icon><ArrowRight /></el-icon>
+                </el-button>
             </div>
         </div>
     </div>
@@ -25,9 +28,22 @@ interface Post {
     category: string;
     image: string;
 }
-
 defineProps<{ post: Post }>()
+
+import { ArrowRight } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+// 单独的跳转方法
+const goToDetail = (post:any) => {
+    router.push({
+        name: 'post',
+        params: { id: post.id }
+    })
+}
+
 </script>
+
 
 <style scoped lang="scss">
 .post-card {

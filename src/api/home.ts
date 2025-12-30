@@ -12,7 +12,7 @@ export const pageHomeArticle = (data?: object) => {
 
 
 
-export const getArticleById = async (id: string| undefined): Promise<ArticleVO> => {
+export const getArticleById = async (id: any): Promise<ArticleVO> => {
     try {
         const response = await http.get(`/api/article/get-article-by-id/${id}`);
         return response.data;

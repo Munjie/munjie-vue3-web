@@ -219,6 +219,7 @@ watch(post, async (newPost) => {
     }
 });
 
+
 // 处理文章点赞
 const handlePostLike = async () => {
     if (!userStore.getToken) {
