@@ -216,11 +216,11 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, watch, nextTick} from 'vue'
+import {ref, onMounted, watch, nextTick,onUnmounted} from 'vue'
 import {useRoute} from 'vue-router'
 import {MdPreview} from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
-import {getArticleById} from "../api/home.ts";
+import {getArticleById, sendView} from "../api/home.ts";
 import type {ArticleVO} from "../types/article.ts";
 import router from "../router";
 import {ElMessage} from "element-plus";
@@ -250,8 +250,12 @@ const emojiList = ['😃', '😁', '😅', '🤣', '😘', '🥰', '😗', '😋
 // 文章点赞状态
 const postLiked = ref(false)
 const postLikeCount = ref(0)
-
 const replyTargetName = ref('');
+
+const props = defineProps(['id']);
+const viewTriggered = ref(false);
+
+let observer: IntersectionObserver | null = null;
 onMounted(async () => {
     const postId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
     if (!postId) {
@@ -264,13 +268,39 @@ onMounted(async () => {
     postLiked.value = post.value?.postLiked;
     await loadComments()
 })
-watch(post, async (newPost) => {
-    if (newPost) {
-        await nextTick();
 
+
+const initObserver = () => {
+    const target = document.querySelector('.post-body');
+    if (!target) {
+        console.warn("未找到 .post-body 节点");
+        return;
     }
-});
+    observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            // 只要元素进入视口超过 10% 即可触发
+            if (entry.isIntersecting && entry.intersectionRatio > 0.1 && !viewTriggered.value) {
+                sendViewStat();
+                viewTriggered.value = true;
+                if (observer) {
+                    observer.unobserve(target);
+                }
+            }
+        });
+    }, { threshold: [0.1, 0.5] });
+    observer.observe(target);
+};
 
+
+
+// 关键：监听数据加载完成后再初始化
+watch(() => post.value, (newPost) => {
+    if (newPost) {
+        nextTick(() => {
+            initObserver();
+        });
+    }
+}, { immediate: true });
 
 
 const toggleReply = (id: number, username: string) => {
@@ -352,10 +382,9 @@ const addEmoji = (emoji: string, type: 'main' | 'reply') => {
         replyContent.value += emoji
     }
 }
-// 模拟加载评论数据
+
 const loadComments = async () => {
     commentsLoading.value = true
-    // 模拟数据结构：
     setTimeout(async () => {
         commentList.value = await getComments(post.value?.id)
         commentsLoading.value = false
@@ -397,6 +426,22 @@ const submitComment = async (parentId: number) => {
         ElMessage.error('发布失败')
     }
 }
+
+
+const sendViewStat = async () => {
+    try {
+        await sendView(post.value?.id);
+    } catch (err) {
+        console.error("统计发送失败", err);
+    }
+};
+
+onUnmounted(() => {
+    if (observer) {
+        observer.disconnect();
+        observer = null;
+    }
+});
 </script>
 
 <style scoped lang="scss">

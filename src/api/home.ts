@@ -10,6 +10,15 @@ export const pageHomeArticle = (data?: object) => {
 
 
 
+export const sendView = async (id: any): Promise<any> => {
+    try {
+       return  await http.get(`/api/article/count-view/${id}`);
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
 
 
 export const getArticleById = async (id: any): Promise<ArticleVO> => {
