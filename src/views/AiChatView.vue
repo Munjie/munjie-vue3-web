@@ -49,7 +49,7 @@
                         <div class="text">
                             <MdPreview :modelValue="msg.content" theme="dark"/>
                         </div>
-                        <div class="message-actions" v-if="!isTyping">
+                        <div class="message-actions" v-if="msg.role === 'user' || (index < currentSession.messages.length - 1) || !isTyping">
                             <el-icon class="copy-icon" @click="copyText(msg.content)">
                                 <DocumentCopy/>
                             </el-icon>
@@ -326,7 +326,17 @@ const sendMessage = async () => {
 
         while (true) {
             const {done, value} = await reader.read()
-            if (done) break
+            if (done) {
+                // 等待队列中的打字机效果全部处理完
+                const checkFinished = setInterval(() => {
+                    if (typewriterQueue.length === 0 && !isProcessingQueue) {
+                        isTyping.value = false;
+                        clearInterval(checkFinished);
+                        saveToLocal();
+                    }
+                }, 100);
+                break;
+            }
 
             const chunk = decoder.decode(value)
             const lines = chunk.split('\n')
@@ -342,12 +352,6 @@ const sendMessage = async () => {
                             typewriterQueue.push(...delta.split(''));
                             const lastIndex = currentSession.value.messages.length - 1;
                             processTypewriter(currentSession.value.messages[lastIndex]);
-                           /* // 修复：获取目标消息引用并进行空值判断
-                            const targetMessage = currentSession.value.messages[lastIndex]
-                            if (targetMessage) {
-                                targetMessage.content += delta
-                                scrollToBottom()
-                            }*/
                         }
 
                     } catch (e) {
@@ -355,13 +359,8 @@ const sendMessage = async () => {
                 }
             })
         }
-        // 成功结束后保存一次
-        saveToLocal()
-        isTyping.value = false
     } catch (error) {
         ElMessage.error('网络错误')
-        isTyping.value = false
-    } finally {
         isTyping.value = false
     }
 }
