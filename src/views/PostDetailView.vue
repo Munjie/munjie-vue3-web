@@ -73,7 +73,7 @@
                             <template #reference>
                                 <div class="emoji-trigger-btn">
                                     <el-icon :size="20">
-                                        <ChatLineRound/>
+                                        <EmojiSmile />
                                     </el-icon>
                                 </div>
                             </template>
@@ -84,7 +84,7 @@
                             </div>
                         </el-popover>
 
-                        <el-button type="primary" round @click="submitComment(0)">发表评论</el-button>
+                        <el-button type="primary" round @click="submitComment(0)" :disabled="!commentForm.content.trim()">发表评论</el-button>
                     </div>
                 </div>
 
@@ -118,7 +118,7 @@
                                         <template #reference>
                                             <div class="emoji-trigger-btn mini">
                                                 <el-icon :size="16">
-                                                    <ChatLineRound/>
+                                                    <EmojiSmile />
                                                 </el-icon>
                                             </div>
                                         </template>
@@ -130,7 +130,7 @@
                                     </el-popover>
                                     <div class="right-btns">
                                         <el-button size="small" link @click="replyId = 0">取消</el-button>
-                                        <el-button size="small" type="primary" round @click="submitComment(item.id)">
+                                        <el-button size="small" type="primary" round @click="submitComment(item.id)" :disabled="!replyContent.trim()">
                                             发送
                                         </el-button>
                                     </div>
@@ -176,9 +176,8 @@ import router from "../router";
 import {ElMessage} from "element-plus";
 import {useUserStore} from '../stores'
 import {getComments, addComment, updateArticleLike, updateCommentLike} from "../api/comment.ts"
-import {ChatDotRound, Calendar, View, ChatLineRound} from '@element-plus/icons-vue'
-
-// 定义大拇指 SVG (Heroicons 风格，非常专业美观)
+import {ChatDotRound, Calendar, View} from '@element-plus/icons-vue'
+import EmojiSmile from '../components/icons/SmilSvg.vue'
 const ThumbUpIcon = `
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
   <path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a.75.75 0 01.75-.75A2.25 2.25 0 0116.5 4.5c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 01-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 00-1.423-.23H5.904M14.25 9h2.25M5.904 18.75c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 01-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 10.203 4.167 9.75 5 9.75h1.053c.472 0 .745.556.5.96a8.958 8.958 0 00-1.302 4.665c0 1.194.232 2.333.654 3.375z" />
@@ -579,23 +578,6 @@ const submitComment = async (parentId: number) => {
   }
 }
 
-/* 深度覆盖 Element Plus 输入框样式 */
-:deep(.dark-input) {
-  .el-textarea__inner, .el-input__inner {
-    background: rgba(0, 0, 0, 0.2) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: #fff !important;
-
-    &:focus {
-      border-color: var(--accent-color) !important;
-    }
-  }
-
-  .el-input__count {
-    background: transparent !important;
-  }
-}
-
 /* 移动端适配 */
 @media (max-width: 768px) {
   .comment-section {
@@ -636,46 +618,6 @@ const submitComment = async (parentId: number) => {
   }
 }
 
-/* 表情面板容器（全局或 :deep） */
-:deep(.emoji-popover) {
-  background: rgba(30, 30, 30, 0.9) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  backdrop-filter: blur(10px);
-  padding: 10px !important;
-
-  .emoji-list {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 5px;
-    max-height: 200px;
-    overflow-y: auto;
-
-    span {
-      font-size: 1.2rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 5px;
-      border-radius: 6px;
-      transition: background 0.2s;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.1);
-      }
-    }
-  }
-
-  /* 自定义滚动条 */
-  .emoji-list::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  .emoji-list::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-  }
-}
 
 /* 输入框包裹器 */
 .comment-input-wrapper {
@@ -751,29 +693,6 @@ const submitComment = async (parentId: number) => {
   gap: 8px;
   align-items: center;
 }
-
-/* 表情面板的美化（保持一致） */
-:deep(.emoji-popover) {
-  border-radius: 12px !important;
-
-  .emoji-list {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 8px;
-
-    span {
-      font-size: 1.3rem;
-      text-align: center;
-      padding: 4px;
-      border-radius: 6px;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.1);
-      }
-    }
-  }
-}
-
 
 
 /* 2. 文章点赞区样式 */
@@ -933,7 +852,7 @@ const submitComment = async (parentId: number) => {
         }
 
         &:hover .mini-icon {
-            transform: rotate(-15px) scale(1.2); // 悬浮时大拇指歪一下，很有趣
+            transform: rotate(-15px) scale(1.2);
         }
 
         &.is-liked {
@@ -954,5 +873,55 @@ const submitComment = async (parentId: number) => {
     .comment-input-wrapper {
         margin-bottom: 50px; // 与评论列表拉开
     }
+}
+
+/* 表情面板容器美化 */
+:deep(.emoji-popover) {
+  background: rgba(25, 25, 25, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(15px);
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  padding: 12px !important;
+
+  .emoji-list {
+    display: grid;
+    /* PC 端默认每行 8 个，间距 10px */
+    grid-template-columns: repeat(8, 1fr);
+    gap: 10px;
+    max-height: 250px;
+    overflow-y: auto;
+
+    span {
+      font-size: 100px; // 稍微调大表情图标
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1 / 1; // 保持正方形，方便点击
+      border-radius: 8px;
+      transition: all 0.2s;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(1.15);
+      }
+
+      /* 适配移动端：增加点击区域面积，减少每行个数 */
+      @media (max-width: 768px) {
+        font-size: 1.6rem;
+        padding: 5px;
+      }
+    }
+  }
+
+  /* 针对移动端弹窗宽度的自适应 */
+  @media (max-width: 768px) {
+    width: 90vw !important; // 移动端占据屏幕大部分宽度
+    .emoji-list {
+      grid-template-columns: repeat(6, 1fr); // 移动端每行 6 个，更方便手指点击
+      gap: 12px;
+    }
+  }
 }
 </style>
