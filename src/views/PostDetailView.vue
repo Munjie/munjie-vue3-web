@@ -430,7 +430,11 @@ const submitComment = async (parentId: number) => {
 
 const sendViewStat = async () => {
     try {
-        await sendView(post.value?.id);
+        let viewForm = {
+            articleId: post.value?.id,
+            userId: userStore.getUserid,
+        }
+        await sendView(viewForm);
     } catch (err) {
         console.error("统计发送失败", err);
     }
