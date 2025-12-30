@@ -102,7 +102,7 @@
                                         @click="handleCommentLike(item)">
                            <span class="mini-icon" v-html="ThumbUpIcon"></span> {{ item.likes || '赞' }}
                         </span>
-                                <span class="reply-btn" @click="toggleReply(item.id)">回复</span>
+                                <span class="reply-btn" @click="toggleReply(item.id,item.username)">回复</span>
                             </div>
                             <div v-if="replyId === item.id" class="reply-input-wrapper glass-panel">
                                 <el-input
@@ -148,13 +148,53 @@
                             </div>
 
                             <div v-if="item.children && item.children.length > 0" class="child-comments">
-                                <div v-for="child in item.children" :key="child.id" class="child-item">
-                                    <el-avatar :size="24">{{ child.username.charAt(0) }}</el-avatar>
-                                    <div class="child-info">
-                                        <span class="child-username">{{ child.username }}</span>
-                                        <p class="child-text">{{ child.content }}</p>
-                                        <div class="child-footer">
-                                            <span class="time">{{ child.createTime }}</span>
+                                <div v-for="child in item.children" :key="child.id" class="child-item-wrapper">
+                                    <div class="child-item">
+                                        <el-avatar :size="24" class="child-avatar">{{ child.username.charAt(0) }}</el-avatar>
+                                        <div class="child-info">
+                                            <div class="child-header">
+                                                <span class="child-username">{{ child.username }}</span>
+                                                <span class="child-time">{{ child.createTime }}</span>
+                                            </div>
+                                            <p class="child-text">{{ child.content }}</p>
+
+                                            <div class="child-actions">
+                    <span class="action-btn like"
+                          :class="{ 'is-liked': child.isLiked }"
+                          @click="handleCommentLike(child)">
+                        <span class="mini-icon" v-html="ThumbUpIcon"></span>
+                        {{ child.likes || '赞' }}
+                    </span>
+                                                <span class="action-btn reply" @click="toggleReply(child.id, child.username)">回复</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="replyId === child.id" class="reply-input-wrapper child-reply-box">
+                                        <el-input
+                                            v-model="replyContent"
+                                            type="textarea"
+                                            :rows="2"
+                                            :placeholder="`回复 @${replyTargetName}`"
+                                            class="dark-input"
+                                        />
+                                        <div class="input-footer mini">
+                                            <el-popover popper-class="emoji-popover" trigger="click" :width="280">
+                                                <template #reference>
+                                                    <div class="emoji-trigger-btn mini">
+                                                        <el-icon :size="16"><EmojiSmile /></el-icon>
+                                                    </div>
+                                                </template>
+                                                <div class="emoji-list">
+                                                    <span v-for="emoji in emojiList" :key="emoji" @click="addEmoji(emoji, 'reply')">{{ emoji }}</span>
+                                                </div>
+                                            </el-popover>
+                                            <div class="right-btns">
+                                                <el-button size="small" link @click="replyId = 0">取消</el-button>
+                                                <el-button size="small" type="primary" round
+                                                           :disabled="!replyContent.trim()"
+                                                           @click="submitComment(item.id)">发送</el-button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -210,6 +250,8 @@ const emojiList = ['😃', '😁', '😅', '🤣', '😘', '🥰', '😗', '😋
 // 文章点赞状态
 const postLiked = ref(false)
 const postLikeCount = ref(0)
+
+const replyTargetName = ref('');
 onMounted(async () => {
     const postId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
     if (!postId) {
@@ -230,6 +272,21 @@ watch(post, async (newPost) => {
 });
 
 
+
+const toggleReply = (id: number, username: string) => {
+    if (!userStore.getToken) {
+        ElMessage.warning('请登录后再回复')
+        return
+    }
+    if (replyId.value === id) {
+        replyId.value = 0;
+        replyTargetName.value = '';
+    } else {
+        replyId.value = id;
+        replyTargetName.value = username;
+        replyContent.value = ''; // 清空之前的输入
+    }
+};
 // 处理文章点赞
 const handlePostLike = async () => {
     if (!userStore.getToken) {
@@ -305,14 +362,6 @@ const loadComments = async () => {
     }, 500)
 }
 
-const toggleReply = (id: number) => {
-    if (!userStore.getToken) {
-        ElMessage.warning('请登录后再回复')
-        return
-    }
-    replyId.value = replyId.value === id ? 0 : id
-    replyContent.value = ''
-}
 
 
 const submitComment = async (parentId: number) => {
@@ -328,7 +377,7 @@ const submitComment = async (parentId: number) => {
         return
     }
     let contentForm = {
-        content: content,
+        content: '@' + replyTargetName.value + ' ' + content,
         articleId: post.value?.id,
         parentId: parentId
     }
@@ -1020,7 +1069,80 @@ const submitComment = async (parentId: number) => {
     }
   }
 }
+/* 子评论容器 */
+.child-comments {
+    margin-top: 15px;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
 
+    .child-item-wrapper {
+        margin-bottom: 15px;
+        &:last-child { margin-bottom: 0; }
+    }
+}
+
+/* 子评论头部：名字与时间同行 */
+.child-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+
+    .child-username {
+        font-size: 0.85rem;
+        color: var(--accent-color);
+        font-weight: 600;
+    }
+
+    .child-time {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* 子评论操作按钮样式 */
+.child-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 6px;
+
+    .action-btn {
+        font-size: 0.75rem; /* 比一级评论小一号 */
+        color: rgba(255, 255, 255, 0.4);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        transition: all 0.2s;
+
+        &:hover {
+            color: var(--accent-color);
+        }
+
+        &.is-liked {
+            color: #a855f7;
+            .mini-icon { transform: scale(1.1); }
+        }
+
+        .mini-icon {
+            font-size: 12px;
+            :deep(svg) { width: 14px; height: 14px; }
+        }
+    }
+}
+
+/* 嵌套的回复框微调 */
+.child-reply-box {
+    margin-top: 10px;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+
+    :deep(.el-textarea__inner) {
+        min-height: 60px !important;
+        font-size: 0.9rem !important;
+    }
+}
 </style>
 
 
