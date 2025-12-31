@@ -31,6 +31,12 @@ service.interceptors.request.use(
         const userStore = useUserStore();
         // 优先从 Pinia 拿 token（），没有再 fallback 到 localStorage
         let token = userStore.getToken || localStorage.getItem('token') || ''
+        console.log(config.url)
+        if (config.url?.includes('/login') && token) {
+            // 防止死循环：阻止继续发 /login 请求
+            window.location.href = '/';
+            return Promise.reject('已登录，重定向到主页');
+        }
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }

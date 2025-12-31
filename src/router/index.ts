@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 // @ts-ignore
 import HomeView from '../views/HomeView.vue'
+import {useUserStore} from "../stores";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -42,5 +43,20 @@ const router = createRouter({
         return { top: 0 }
     }
 })
+
+
+router.beforeEach((to, _from, next) => {
+    const userStore = useUserStore();
+    const token: string = userStore.getToken || localStorage.getItem('token') || '';
+
+    if (to.path === '/login' && token) {
+        next('/');
+        return;
+    }
+
+    next();
+});
+
+
 
 export default router
