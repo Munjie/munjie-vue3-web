@@ -49,18 +49,19 @@
                         <div class="text">
                             <MdPreview :modelValue="msg.content" theme="dark"/>
                         </div>
-                        <div class="message-actions" v-if="msg.role === 'user' || (index < currentSession.messages.length - 1) || !isTyping">
+                        <div class="message-actions"
+                             v-if="msg.role === 'user' || (index < currentSession.messages.length - 1) || !isTyping">
                             <el-icon class="copy-icon" @click="copyText(msg.content)">
                                 <DocumentCopy/>
                             </el-icon>
                         </div>
                     </div>
                 </div>
-              <div v-if="isTyping" class="message-row assistant">
+                <div v-if="isTyping" class="message-row assistant">
                     <div class="typing-indicator"><span>.</span><span>.</span><span>.</span></div>
                 </div>
             </div>
-            <div class="input-area-container">
+            <div class="input-area-container" ref="inputAreaRef">
                 <div class="input-card glass-panel">
                     <el-input
                             v-model="userInput"
@@ -179,7 +180,7 @@ const isDevelopment = import.meta.env.MODE === 'development'
 // --- 计算当前活动的会话 ---
 const currentSession = ref<ChatSession | null>(null)
 const baseURL = isDevelopment ? 'http://localhost:8090/chat/completions' : '/api/chat/completions'
-
+const inputAreaRef = ref<HTMLElement | null>(null);
 // --- 新增响应式状态 ---
 const isMobile = ref(false)
 
@@ -328,7 +329,6 @@ const sendMessage = async () => {
         const decoder = new TextDecoder()
 
 
-
         while (true) {
             const {done, value} = await reader.read()
             if (done) {
@@ -367,6 +367,8 @@ const sendMessage = async () => {
     } catch (error) {
         ElMessage.error('网络错误')
         isTyping.value = false
+    } finally {
+        setTimeout(scrollToBottom, 100);
     }
 }
 const copyText = (text: string) => {
@@ -380,22 +382,26 @@ const copyText = (text: string) => {
     }
 }
 
-/*const scrollToBottom = async () => {
-    await nextTick()
-    if (scrollRef.value) {
-        scrollRef.value.scrollTop = scrollRef.value.scrollHeight
-    }
-}*/
-let scrollTimer: number | null = null;
+
 const scrollToBottom = async () => {
-    if (scrollTimer) return;
-    await nextTick()
-    scrollTimer = window.requestAnimationFrame(() => {
-        if (scrollRef.value) {
-            scrollRef.value.scrollTop = scrollRef.value.scrollHeight;
-        }
-        scrollTimer = null;
-    });
+    debugger
+    await nextTick();
+    if (scrollRef.value) {
+        // 直接设置 scrollTop 是最稳妥的，不依赖 behavior: smooth 的兼容性
+        scrollRef.value.scrollTop = scrollRef.value.scrollHeight;
+        // 针对 iOS 键盘收起/弹出的抖动，再补一个延迟滚动
+        setTimeout(() => {
+            if (scrollRef.value) {
+                scrollRef.value.scrollTop = scrollRef.value.scrollHeight;
+            }
+        }, 50);
+    }
+    if (isMobile.value && inputAreaRef.value) {
+        inputAreaRef.value.scrollIntoView({
+            behavior: 'smooth',
+            block: 'end' // 确保输入框容器的底部对齐视口底部
+        });
+    }
 };
 // 兜底方案实现
 const fallbackCopy = (text: string) => {
@@ -440,18 +446,24 @@ const fetchAllModel = async () => {
 </script>
 
 <style scoped lang="scss">
+
+:global(html, body, #app) {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 .chat-container {
   display: flex;
-  height: calc(100vh - var(--header-height));
+  height: calc(100dvh - var(--header-height));
+  width: 100vw;
   background: var(--bg-color);
+  overflow: hidden; /* 防止整页滚动 */
 }
 
 
 /* 主容器适配顶部导航 */
 .chat-main {
-  @media (max-width: 768px) {
-    padding-top: 50px; /* 给固定顶部的 mobile-nav 留出空间 */
-  }
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -459,19 +471,27 @@ const fetchAllModel = async () => {
   max-width: 900px;
   margin: 0 auto;
   width: 100%;
+  height: 100%;
+  overflow: hidden; /* 关键：锁定主容器 */
 }
 
 /* 确保消息容器在移动端也能滑动 */
 .messages-wrapper {
-  @media (max-width: 768px) {
-    padding: 20px 15px 100px; /* 底部增加 padding 防止被输入框遮挡 */
-  }
   flex: 1;
   overflow-y: auto;
-  padding: 40px 20px;
+  padding: 20px 15px;
   display: flex;
   flex-direction: column;
   gap: 30px;
+  /*  @media (max-width: 768px) {
+      !* 移动端减小底部 padding，因为输入框不再是绝对定位，不会遮挡内容 *!
+      padding: 60px 15px 20px;
+    }*/
+  -webkit-overflow-scrolling: touch;
+  @media (max-width: 768px) {
+    /* 顶部预留出移动端导航栏的高度，防止遮挡第一条消息 */
+    padding-top: 60px;
+  }
 }
 
 .message-row {
@@ -483,10 +503,10 @@ const fetchAllModel = async () => {
     align-self: flex-end;
     flex-direction: row-reverse;
 
-/*    .message-content {
-      background: var(--accent-color);
-      color: white;
-    }*/
+    /*    .message-content {
+          background: var(--accent-color);
+          color: white;
+        }*/
   }
 }
 
@@ -610,13 +630,18 @@ const fetchAllModel = async () => {
 }
 
 .input-area-container {
-  padding: 0 20px 20px;
-  background: transparent;
-
+  flex-shrink: 0; /* 关键：确保输入框不会因为消息多而被挤扁 */
+  padding: 10px 20px 20px; /* PC 端间距 */
+  background: #151515;
+  width: 100%;
   @media (max-width: 768px) {
-    padding: 10px;
-    background: #151515; // 移动端吸底背景
+    /* 移动端适配：padding-bottom 使用 env 确保贴合 iOS 底边 */
+    padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+    background: #151515;
+    position: relative;
+    z-index: 10;
   }
+
 }
 
 .input-card {
@@ -873,14 +898,17 @@ const fetchAllModel = async () => {
 .mobile-nav {
   display: none;
   @media (max-width: 768px) {
+    position: absolute; /* 改为绝对定位，不占流空间，由 wrapper 的 padding-top 避开 */
+    top: 0;
+    left: 0;
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 10px 15px;
     background: rgba(30, 30, 30, 0.9);
     border-bottom: 1px solid var(--glass-border);
-    position: fixed;
-    top: 0;
+
     width: 100%;
     z-index: 100;
     color: #fff;
@@ -943,46 +971,62 @@ const fetchAllModel = async () => {
 
 /* 消息文本的基础样式 */
 .message-content .text {
-    line-height: 1.6;
-    word-break: break-word;
+  line-height: 1.6;
+  word-break: break-word;
 
-    /* 给新生成的文字一个自然的过渡 */
-    transition: all 0.2s ease;
+  /* 给新生成的文字一个自然的过渡 */
+  transition: all 0.2s ease;
 }
 
 /* 模拟打字机光标 (正在输入时显示) */
 .is-typing .text::after {
-    content: " ";
-    display: inline-block;
-    width: 4px;
-    height: 18px;
-    background-color: var(--accent-color);
-    margin-left: 4px;
-    vertical-align: middle;
-    animation: blink 0.8s infinite;
+  content: " ";
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background-color: var(--accent-color);
+  margin-left: 4px;
+  vertical-align: middle;
+  animation: blink 0.8s infinite;
 }
 
 @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 .thinking-dots {
-    display: flex;
-    gap: 4px;
-    padding: 10px;
-    span {
-        width: 6px; height: 6px;
-        background: var(--accent-color);
-        border-radius: 50%;
-        animation: dot-jump 1.4s infinite ease-in-out;
-        &:nth-child(2) { animation-delay: 0.2s; }
-        &:nth-child(3) { animation-delay: 0.4s; }
+  display: flex;
+  gap: 4px;
+  padding: 10px;
+
+  span {
+    width: 6px;
+    height: 6px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    animation: dot-jump 1.4s infinite ease-in-out;
+
+    &:nth-child(2) {
+      animation-delay: 0.2s;
     }
+
+    &:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+  }
 }
 
 @keyframes dot-jump {
-    0%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-6px); }
+  0%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-6px);
+  }
 }
 </style>
