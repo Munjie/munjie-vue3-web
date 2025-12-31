@@ -93,6 +93,27 @@
                                     <Files/>
                                 </el-icon>
                             </div>
+                            <div
+                                    class="icon-btn-wrapper search-btn"
+                                    :class="{ 'is-active': isSearchEnabled }"
+                                    @click="isSearchEnabled = !isSearchEnabled"
+                                    title="联网搜索"
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                     xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M12 2C14.5 5 15.8 8.3 16 12C15.8 15.7 14.5 19 12 22" stroke="currentColor"
+                                          stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M12 2C9.5 5 8.2 8.3 8 12C8.2 15.7 9.5 19 12 22" stroke="currentColor"
+                                          stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M2 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M4 7C6.5 8 9.3 8.5 12 8.5C14.7 8.5 17.5 8 20 7" stroke="currentColor"
+                                          stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M4 17C6.5 16 9.3 15.5 12 15.5C14.7 15.5 17.5 16 20 17"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                                <span class="search-label" v-if="!isMobile"></span>
+                            </div>
                         </div>
 
                         <div class="toolbar-right">
@@ -162,6 +183,8 @@ import {ElMessage, ElMessageBox} from 'element-plus'
 import {Plus, DocumentCopy, Delete, ChatLineRound, Promotion} from '@element-plus/icons-vue'
 
 
+// 2. 定义联网搜索状态
+const isSearchEnabled = ref(false)
 const modelOptions = ref();
 const handleFileUpload = (file: any) => {
     ElMessage.info(`已选择文件: ${file.name} (后端接入开发中...)`)
@@ -321,6 +344,7 @@ const sendMessage = async () => {
             body: JSON.stringify({
                 model: selectedModel.value,
                 stream: true,
+                search: isSearchEnabled.value,
                 messages: currentSession.value.messages.slice(0, -1)
             })
         })
@@ -384,7 +408,6 @@ const copyText = (text: string) => {
 
 
 const scrollToBottom = async () => {
-    debugger
     await nextTick();
     if (scrollRef.value) {
         // 直接设置 scrollTop 是最稳妥的，不依赖 behavior: smooth 的兼容性
@@ -812,6 +835,30 @@ const fetchAllModel = async () => {
 
     .action-icon {
       font-size: 20px;
+    }
+  }
+
+  /* 联网搜索按钮特有样式 */
+  .search-btn {
+    display: flex !important;
+    gap: 4px;
+      box-sizing: border-box;
+    .search-label {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* 高亮状态：使用你项目的主色调 */
+    &.is-active {
+      background: rgba(99, 102, 241, 0.15) !important;
+      color: var(--accent-color) !important;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.1);
+
+      .action-icon {
+        /* 让图标有一点点发光感 */
+        filter: drop-shadow(0 0 2px var(--accent-color));
+      }
     }
   }
 }
