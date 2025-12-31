@@ -220,7 +220,7 @@ import {ref, onMounted, watch, nextTick,onUnmounted} from 'vue'
 import {useRoute} from 'vue-router'
 import {MdPreview} from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
-import {getArticleById, sendView} from "../api/home.ts";
+import {getArticleById, sendView} from "../api/article.ts";
 import type {ArticleVO} from "../types/article.ts";
 import router from "../router";
 import {ElMessage} from "element-plus";

@@ -141,7 +141,7 @@
 
 <script setup lang="ts">
 
-import {getAllModel} from "../api/home.ts";
+import {getAllModel, getChatHistory, saveChat} from "../api/chat.ts";
 
 interface Message {
     role: 'user' | 'assistant';
@@ -160,6 +160,7 @@ import {MdPreview} from 'md-editor-v3'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {Plus, DocumentCopy, Delete, ChatLineRound, Promotion} from '@element-plus/icons-vue'
 
+
 const modelOptions = ref();
 const handleFileUpload = (file: any) => {
     ElMessage.info(`已选择文件: ${file.name} (后端接入开发中...)`)
@@ -168,7 +169,6 @@ const handleFileUpload = (file: any) => {
 
 const selectedModel = ref()
 // --- 状态定义 ---
-const STORAGE_KEY = 'nocturne_chat_history'
 const sessions = ref<ChatSession[]>([])
 const currentSessionId = ref<string>('')
 const isTyping = ref(false)
@@ -196,7 +196,7 @@ const processTypewriter = async (targetMsg: any) => {
         const char = typewriterQueue.shift();
         if (char) {
             targetMsg.content += char;
-            // 控制打字速度：30ms 一个字，这会让视觉非常顺滑
+            // 控制打字速度：30ms 一个字
             await new Promise(resolve => setTimeout(resolve, 30));
             await scrollToBottom();
         }
@@ -228,11 +228,12 @@ const handleEnter = (e: KeyboardEvent) => {
     }
 }
 // --- 核心：初始化加载 ---
-onMounted(() => {
-    fetchAllModel();
+onMounted(async () => {
+    await fetchAllModel();
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    const saved = localStorage.getItem(STORAGE_KEY)
+    // const saved = localStorage.getItem(STORAGE_KEY)
+    const saved = await getChatHistory();
     if (saved) {
         sessions.value = JSON.parse(saved)
         // 修复：显式判断数组长度
@@ -248,8 +249,12 @@ onMounted(() => {
 
 })
 // --- 核心：保存到本地 ---
-const saveToLocal = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions.value))
+const saveToLocal = async () => {
+    let chatForm = {
+        chat: JSON.stringify(sessions.value),
+    }
+    await saveChat(chatForm);
+    // localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions.value))
 }
 
 // --- 创建新对话 ---

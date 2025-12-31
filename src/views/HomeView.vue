@@ -41,7 +41,7 @@
 import {ref, computed, onMounted, watch} from 'vue'
 import PostCard from '../components/PostCard.vue'
 import {useRoute, useRouter} from 'vue-router'
-import {pageHomeArticle} from "../api/home.ts";
+import {pageHomeArticle} from "../api/article.ts";
 import type {ArticleVO} from "../types/article.ts";
 
 
