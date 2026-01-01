@@ -8,8 +8,9 @@
 
                 <nav class="desktop-nav">
                     <el-popover
-                            :visible="searchVisible"
+
                             placement="bottom-start"
+                            hide-on-click
                             trigger="click"
                             :width="350"
                             popper-class="premium-search-popover"
@@ -29,7 +30,7 @@
                         <div class="search-panel-content">
                             <el-input
                                     v-model="searchText"
-                                    placeholder="输入关键词..."
+                                    placeholder="搜索文章..."
                                     size="large"
                                     clearable
                                     @keyup.enter="handleSearch"
@@ -214,7 +215,7 @@ const handleSearch = () => {
         // 如果清空搜索，也应该清除路由中的 keyword 参数
         router.push({ path: '/', query: { page: '1' } })
     }
-    searchText.value = '' // 清空输入框
+    // searchText.value = '' // 清空输入框
 }
 
 // 移动端搜索逻辑 (修改)
