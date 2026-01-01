@@ -329,7 +329,7 @@ const handlePostLike = async () => {
     postLikeCount.value += postLiked.value ? 1 : -1;
 
     try {
-        const res = await updateArticleLike(post.value?.id);
+        const res = await updateArticleLike(post.value?.id,userStore.getUserid);
         postLiked.value = res.liked;
         postLikeCount.value = res.likeCount;
 
@@ -362,7 +362,7 @@ const handleCommentLike = async (item: any) => {
     item.likes = (item.likes || 0) + (item.isLiked ? 1 : -1)
     try {
 
-        const res = await updateCommentLike(item.id);
+        const res = await updateCommentLike(item.id,userStore.getUserid);
         item.isLiked = res.liked;
         item.likes = res.likeCount;
 
@@ -386,11 +386,10 @@ const addEmoji = (emoji: string, type: 'main' | 'reply') => {
 const loadComments = async () => {
     commentsLoading.value = true
     setTimeout(async () => {
-        commentList.value = await getComments(post.value?.id)
+        commentList.value = await getComments(post.value?.id,userStore.getUserid)
         commentsLoading.value = false
     }, 500)
 }
-
 
 
 const submitComment = async (parentId: number) => {
@@ -406,9 +405,10 @@ const submitComment = async (parentId: number) => {
         return
     }
     let contentForm = {
-        content: '@' + replyTargetName.value + ' ' + content,
+        content: replyTargetName.value? '@' + replyTargetName.value + ' ' + content : content,
         articleId: post.value?.id,
-        parentId: parentId
+        parentId: parentId,
+        userId: userStore.getUserid,
     }
 
     try {

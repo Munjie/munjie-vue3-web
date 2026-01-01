@@ -12,27 +12,27 @@ export const addComment = (data?: object) => {
 };
 
 
-export const getComments = async (id: number| undefined): Promise<any> => {
+export const getComments = async (id: number| undefined,userId: number| undefined): Promise<any> => {
     try {
-        const response = await http.get(`/api/article/all-comment/${id}`);
+        const response = await http.get(`/api/article/all-comment/${id}/${userId}`);
         return response.data;
     } catch (error) {
         return null;
     }
 };
 
-export const updateArticleLike = async (id: number| undefined): Promise<any> => {
+export const updateArticleLike = async (id: number| undefined,userId: number| undefined): Promise<any> => {
     try {
-        const response = await http.get(`/api/article/article-like/${id}`);
+        const response = await http.get(`/api/article/article-like/${id}/${userId}`);
         return response.data;
     } catch (error) {
         return null;
     }
 };
 
-export const updateCommentLike = async (id: number| undefined): Promise<any> => {
+export const updateCommentLike = async (id: number| undefined,userId: number| undefined): Promise<any> => {
     try {
-        const response = await http.get(`/api/article/comment-like/${id}`);
+        const response = await http.get(`/api/article/comment-like/${id}/${userId}`);
         return response.data;
     } catch (error) {
         return null;
