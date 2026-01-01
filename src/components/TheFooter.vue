@@ -16,7 +16,7 @@
 
                 <div class="footer-links">
                     <a href="#"><el-icon><Platform /></el-icon> GitHub</a>
-                    <a href="#"><el-icon><ChatDotRound /></el-icon> FaceBook</a>
+                    <a href="#"><el-icon><ChatDotRound /></el-icon> Weibo</a>
                     <a href="#"><el-icon><Message /></el-icon> Email</a>
                 </div>
             </div>

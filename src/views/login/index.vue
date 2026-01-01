@@ -1,11 +1,6 @@
 <template>
     <div class="login-bg">
         <div class="login-container">
-            <div class="login-header">
-<!--                <img class="logo mr10" src="../../assets/img/login-index.svg" alt=""/>-->
-                <div class="login-title">JCloud</div>
-            </div>
-
             <div class="qr-login-box">
                 <h3 style="text-align: center; margin-bottom: 30px; color: #333;">
                     微信扫码或长按识别登录
@@ -38,6 +33,12 @@
                             <p>正在刷新...</p>
                         </div>
 
+                      <!-- 失败 -->
+                      <div v-if="loginStatus === 'failed'" class="status failed">
+                        <el-icon class="is-loading icon"><Loading /></el-icon>
+                        <p>获取失败，请刷新</p>
+                      </div>
+
                         <!-- 刷新按钮：始终可见 -->
                         <div class="refresh-btn" @click="refreshQr">
                             <el-icon><Refresh /></el-icon>
@@ -67,10 +68,10 @@ const scene = ref<string>('')
 let ws: WebSocket | null = null
 let currentObjectUrl = ''
 
-let loginStatus = ref<'loading' | 'waiting' | 'scanned' | 'refreshing'>('loading')  // 初始为 loading
+let loginStatus = ref<'loading' | 'waiting' | 'scanned' | 'refreshing' | 'failed'>('loading')  // 初始为 loading
 
 const refreshQr = () => {
-    if (loginStatus.value === 'loading' || loginStatus.value === 'refreshing') return // 防止重复点击
+    if (loginStatus.value === 'loading') return // 防止重复点击
     loginStatus.value = 'refreshing'
     if (ws) {
         ws.close()
@@ -88,10 +89,14 @@ const loadQrCode = async () => {
     loginStatus.value = 'loading'
     try {
         const response = await axios.get('/api/wechat/qr', {responseType: 'blob'})
+      if(response.status !== 200) {
+        ElMessage.error('服务器错误')
+        return
+      }
         scene.value = response.headers['x-scene'] || response.headers['X-Scene']
         if (!scene.value) {
-            ElMessage.error('获取二维码失败')
-            loginStatus.value = 'waiting'
+            ElMessage.error('获取二维码失败，请刷新重新获取')
+            loginStatus.value = 'failed'
             return
         }
         if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl)
@@ -100,8 +105,8 @@ const loadQrCode = async () => {
         loginStatus.value = 'waiting'
         connectWebSocket()
     } catch (err) {
-        ElMessage.error('加载二维码失败，请刷新')
-        loginStatus.value = 'waiting'
+        ElMessage.error('加载二维码失败，请刷新重新获取')
+        loginStatus.value = 'failed'
     }
 }
 const isDevelopment = import.meta.env.MODE === 'development'
@@ -241,6 +246,14 @@ onUnmounted(() => {
     justify-content: center;
 }
 
+/* 加载中状态 */
+.qr-overlay.failed {
+  background: rgba(255, 255, 255, 0.8);
+  pointer-events: auto;
+}
+.qr-overlay.failed .status {
+  color: #d11530;
+}
 @keyframes checkPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.08); }
