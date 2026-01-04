@@ -657,6 +657,10 @@ const fetchAllModel = async () => {
   padding: 10px 20px 20px; /* PC 端间距 */
   background: #151515;
   width: 100%;
+  display: flex;
+  justify-content: center; /* 核心：强制子元素水平居中 */
+  align-items: center;
+  box-sizing: border-box; /* 确保 padding 不会撑大容器宽度 */
   @media (max-width: 768px) {
     /* 移动端适配：padding-bottom 使用 env 确保贴合 iOS 底边 */
     padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
@@ -674,7 +678,12 @@ const fetchAllModel = async () => {
   border-radius: 28px; // 超大圆角
   background: rgba(30, 30, 30, 0.7) !important;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: border-color 0.3s;
+  //transition: border-color 0.3s;
+  width: 100%;
+  transition: all 0.3s ease;
+
+  /* 解决移动端阴影或边框导致的视觉偏移 */
+  box-sizing: border-box;
 
   &:focus-within {
     border-color: rgba(99, 102, 241, 0.4);
@@ -842,7 +851,8 @@ const fetchAllModel = async () => {
   .search-btn {
     display: flex !important;
     gap: 4px;
-      box-sizing: border-box;
+    box-sizing: border-box;
+
     .search-label {
       font-size: 12px;
       font-weight: 500;
