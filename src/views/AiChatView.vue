@@ -496,6 +496,7 @@ const fetchAllModel = async () => {
   width: 100%;
   height: 100%;
   overflow: hidden; /* 关键：锁定主容器 */
+
 }
 
 /* 确保消息容器在移动端也能滑动 */
@@ -655,7 +656,7 @@ const fetchAllModel = async () => {
 .input-area-container {
   flex-shrink: 0; /* 关键：确保输入框不会因为消息多而被挤扁 */
   padding: 10px 20px 20px; /* PC 端间距 */
-  background: #151515;
+  //background: #151515;
   width: 100%;
   display: flex;
   justify-content: center; /* 核心：强制子元素水平居中 */
