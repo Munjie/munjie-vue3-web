@@ -73,26 +73,33 @@ import { Camera, EditPen, ArrowLeft } from '@element-plus/icons-vue'
 import { useUserStore } from '../stores'
 import axios from "axios";
 import {ElMessage} from "element-plus";
+import {updateName} from "../api/user.ts";
 
 
 const userStore = useUserStore()
 const router = useRouter()
 const isMobile = ref(window.innerWidth <= 768)
-
-const user = ref({
+interface UserInfo {
+    username: string;
+    bio: string;
+    avatar: string;
+}
+const user = ref<UserInfo>({
     username: userStore.getUsername,
     bio: '探索 AI 的无限可能，保持好奇心。',
     avatar: userStore.getAvatar
 })
 
-const hoverField = ref('')  // 记录鼠标悬停在哪个字段
-const activeField = ref('') // 记录哪个字段处于编辑状态
+const activeField = ref<keyof UserInfo | ''>('')
+const hoverField = ref<keyof UserInfo | ''>('')
+/*const hoverField = ref('')  // 记录鼠标悬停在哪个字段
+const activeField = ref('') // 记录哪个字段处于编辑状态*/
 
 // 引用 Input 实例用于自动聚焦
 const usernameInput = ref<HTMLInputElement | null>(null)
 const bioInput = ref<HTMLInputElement | null>(null)
 
-const setEditable = async (field: string) => {
+const setEditable = async (field: keyof UserInfo) => {
     activeField.value = field
     await nextTick()
     // 切换到编辑模式后自动获取焦点
@@ -100,9 +107,21 @@ const setEditable = async (field: string) => {
     if (field === 'bio') bioInput.value?.focus()
 }
 
-const saveField = (field: string) => {
-    activeField.value = ''
-    console.log(field)
+const saveField = async (field: keyof UserInfo) => {
+    try {
+        activeField.value = ''
+        let nameForm = {
+            id: userStore.getUserid,
+            userName: user.value[field],
+        }
+        const res = await updateName(nameForm);
+        if (res.code === 200) {
+            user.value.username  =  user.value[field];
+            userStore.setUsername(user.value[field]);
+        }
+    } catch (e) {
+
+    }
 }
 
 
@@ -115,7 +134,10 @@ const customUpload = async (options: any) => {
         const res = await axios.post('/api/system/upload-avatar', formData, {
             headers: {'Content-Type': 'multipart/form-data'}
         })
-        return res.data.data
+        if (res.data.code === 200) {
+            return res.data.data;
+        }
+        return userStore.getAvatar;
     } catch (err) {
         throw err
     }
