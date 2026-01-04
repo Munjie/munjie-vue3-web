@@ -27,6 +27,12 @@ const router = createRouter({
             name: 'login',
             component: () => import('../views/login/index.vue')
         },
+
+        {
+            path: '/profile',
+            name: 'profile',
+            component: () => import('../views/Profile.vue')
+        },
         {
             path: '/exception/:code',
             name: 'Exception',

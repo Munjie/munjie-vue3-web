@@ -54,14 +54,15 @@
                         <template v-if="userStore.getToken">
                             <el-dropdown trigger="click">
                                 <div class="avatar-wrapper">
-                                    <el-avatar :size="32" class="custom-avatar">
-                                        {{ userStore.getUsername?.charAt(0) || 'U' }}
+                                    <el-avatar :size="32" class="custom-avatar" :src="userStore.getAvatar">
+<!--                                        {{ userStore.getUsername?.charAt(0) || 'U' }}-->
                                     </el-avatar>
                                     <span class="user-name">{{ userStore.getUsername }}</span>
                                 </div>
                                 <template #dropdown>
                                     <el-dropdown-menu class="dark-dropdown">
                                         <el-dropdown-item @click="router.push('/chat')">我的聊天</el-dropdown-item>
+                                        <el-dropdown-item @click="router.push('/profile')">个人中心</el-dropdown-item>
                                         <el-dropdown-item divided @click="handleLogout" class="logout-item">
                                             <el-icon><SwitchButton /></el-icon>退出登录
                                         </el-dropdown-item>
@@ -104,8 +105,8 @@
                     <div class="mobile-menu-wrapper">
                         <div class="mobile-user-profile" v-if="userStore.getToken">
                             <div class="profile-content">
-                                <el-avatar :size="48" class="premium-avatar">
-                                    {{ userStore.getUsername?.charAt(0).toUpperCase() }}
+                                <el-avatar :size="48" class="premium-avatar" :src="userStore.getAvatar">
+<!--                                    {{ userStore.getUsername?.charAt(0).toUpperCase() }}-->
                                 </el-avatar>
                                 <div class="user-meta">
                                     <span class="user-name">{{ userStore.getUsername }}</span>
@@ -258,7 +259,8 @@ const menuLinks = [
     {name: 'AI', path: '/chat'},
     {name: '技术', path: '/tech'},
     {name: '生活', path: '/life'},
-    {name: '关于', path: '/about'}
+    {name: '关于', path: '/about'},
+    {name: '个人中心', path: '/profile'}
 ]
 
 watch(
@@ -532,7 +534,7 @@ watch(
 }
 
 .custom-avatar {
-    background: linear-gradient(135deg, #6366f1, #a855f7);
+    //background: linear-gradient(135deg, #6366f1, #a855f7);
     color: #fff;
     font-weight: bold;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -669,7 +671,7 @@ watch(
     }
 
     .premium-avatar {
-        background: linear-gradient(135deg, #6366f1, #a855f7);
+        //background: linear-gradient(135deg, #6366f1, #a855f7);
         border: 2px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
         font-size: 24px;
@@ -775,7 +777,7 @@ watch(
 
     .premium-avatar {
         /* 头像由 60px 缩小到 48px */
-        background: linear-gradient(135deg, #6366f1, #a855f7);
+        //background: linear-gradient(135deg, #6366f1, #a855f7);
         border: 1px solid rgba(255, 255, 255, 0.2);
         font-size: 18px; /* 缩小字母大小 */
     }

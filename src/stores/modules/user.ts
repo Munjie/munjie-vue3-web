@@ -5,6 +5,7 @@ import router from '../../router'
 interface AllDataState {
     isCollapse: boolean
     username: string
+    avatar: string
     userid: number
     token: string
     permissions: any[] // 可定义具体 Permission 类型
@@ -18,6 +19,7 @@ function stateIni(): AllDataState {
     return {
         isCollapse: false,
         username: '',
+        avatar: '',
         userid: 0,
         token: '',
         permissions: [],
@@ -32,6 +34,7 @@ export const useUserStore = defineStore('useAllData', {
     // 定义 getters
     getters: {
         getUsername: (state) => state.username,
+        getAvatar: (state) => state.avatar,
         getUserid: (state) => state.userid,
         getToken: (state) => state.token,
         getPermissions: (state) => state.permissions,
@@ -43,6 +46,9 @@ export const useUserStore = defineStore('useAllData', {
         // 设置用户名
         setUsername(username: string) {
             this.username = username
+        },
+        setAvatar(avatar: string) {
+            this.avatar = avatar
         },
         // 设置 userid
         setUserid(userid: number) {
@@ -79,7 +85,7 @@ export const useUserStore = defineStore('useAllData', {
     persist: {
         key: 'user-store',
         storage: localStorage,
-        pick: ['token',  'username', 'userid'] // 使用 pick 指定持久化字段
+        pick: ['token',  'username',  'avatar', 'userid'] // 使用 pick 指定持久化字段
     }
 })
 

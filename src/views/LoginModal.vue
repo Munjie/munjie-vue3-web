@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { v4 as uuidv4 } from 'uuid'; // npm install uuid
 
