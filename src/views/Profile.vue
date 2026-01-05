@@ -130,7 +130,7 @@ const saveField = async (field: keyof UserInfo) => {
 const beforeAvatarUpload = async (file: File) => {
     ElMessage.info('正在处理头像，请稍候...');
     // 限制最长边 500px，超过 200KB 压缩到约 100KB
-    const newFile = await processImage(file, 100, 50, 100);
+    const newFile = await processImage(file, 100, 50, 200);
     // 手动调用你已有的 upload 方法
     await customUpload({file: newFile});
 
@@ -149,7 +149,7 @@ const processImage = (
     file: File,
     maxSizeKB = 50,
     targetKB = 50,
-    maxWidthOrHeight = 50
+    maxWidthOrHeight = 200
 ): Promise<File> => {
     return new Promise((resolve) => {
         const img = new Image();
