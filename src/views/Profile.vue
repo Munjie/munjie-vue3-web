@@ -6,6 +6,7 @@
                            :http-request="customUpload"
                            :on-success="handleAvatarSuccess"
                            :on-error="handleUploadError"
+                           :before-upload="beforeAvatarUpload"
                            :show-file-list="false"
                            accept="image/*"
                 >
@@ -126,6 +127,90 @@ const saveField = async (field: keyof UserInfo) => {
 
 
 
+const beforeAvatarUpload = async (file: File) => {
+    ElMessage.info('正在处理头像，请稍候...');
+    // 限制最长边 500px，超过 200KB 压缩到约 100KB
+    const newFile = await processImage(file, 100, 50, 100);
+    // 手动调用你已有的 upload 方法
+    await customUpload({file: newFile});
+
+    return false; // 阻止 el-upload 默认提交
+};
+
+
+/**
+ * 压缩 + 限制图片最大宽高
+ * @param file 原始文件
+ * @param maxSizeKB 超过此大小执行压缩
+ * @param targetKB 压缩目标大小
+ * @param maxWidthOrHeight 限制最长边像素，例如 500
+ */
+const processImage = (
+    file: File,
+    maxSizeKB = 50,
+    targetKB = 50,
+    maxWidthOrHeight = 50
+): Promise<File> => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        img.onload = () => {
+            let { width, height } = img;
+            // 限制最长边《关键逻辑》
+            const maxSide = Math.max(width, height);
+            if (maxSide > maxWidthOrHeight) {
+                const scale = maxWidthOrHeight / maxSide;
+                width = width * scale;
+                height = height * scale;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d')!;
+            ctx.drawImage(img, 0, 0, width, height);
+            const tryCompress = (q: number) => {
+                return new Promise<File>((resolve2) => {
+                    canvas.toBlob(
+                        (blob) => {
+                            resolve2(new File([blob!], file.name, { type: file.type }));
+                        },
+                        file.type,
+                        q
+                    );
+                });
+            };
+            const fileKb = file.size / 1024;
+            // 不超过阈值，无需压缩（但已做尺寸限制）
+            if (fileKb <= maxSizeKB) {
+                canvas.toBlob(
+                    (blob) => {
+                        resolve(new File([blob!], file.name, { type: file.type }));
+                    },
+                    file.type,
+                    0.9
+                );
+                return;
+            }
+
+            // 超过阈值，开始压缩到 targetKB
+            const tryCompressLoop = async () => {
+                let quality = 0.8;
+                let compressedFile = await tryCompress(quality);
+
+                while (compressedFile.size / 1024 > targetKB && quality > 0.2) {
+                    quality -= 0.1;
+                    compressedFile = await tryCompress(quality);
+                }
+                resolve(compressedFile);
+            };
+
+            tryCompressLoop();
+        };
+    });
+};
+
+
+
 const customUpload = async (options: any) => {
     const formData = new FormData()
     formData.append('file', options.file)
@@ -135,6 +220,8 @@ const customUpload = async (options: any) => {
             headers: {'Content-Type': 'multipart/form-data'}
         })
         if (res.data.code === 200) {
+            user.value.avatar = res.data.data;
+            userStore.setAvatar(res.data.data)
             return res.data.data;
         }
         return userStore.getAvatar;
@@ -145,6 +232,7 @@ const customUpload = async (options: any) => {
 
 // 上传成功
 const handleAvatarSuccess = (response: any) => {
+    debugger
     user.value.avatar  =  response
     userStore.setAvatar(response)
 }
