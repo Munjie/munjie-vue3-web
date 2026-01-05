@@ -90,7 +90,7 @@
 
                 <div class="comment-list" v-loading="commentsLoading">
                     <div v-for="item in commentList" :key="item.id" class="comment-item">
-                        <el-avatar :size="40" class="user-avatar">{{ item.username.charAt(0) }}</el-avatar>
+                        <el-avatar :size="40" class="user-avatar" :src="item.avatar"></el-avatar>
                         <div class="comment-content">
                             <div class="comment-header">
                                 <span class="username">{{ item.username }}</span>
@@ -150,7 +150,7 @@
                             <div v-if="item.children && item.children.length > 0" class="child-comments">
                                 <div v-for="child in item.children" :key="child.id" class="child-item-wrapper">
                                     <div class="child-item">
-                                        <el-avatar :size="24" class="child-avatar">{{ child.username.charAt(0) }}</el-avatar>
+                                        <el-avatar :size="24" class="child-avatar" :src="item.avatar"></el-avatar>
                                         <div class="child-info">
                                             <div class="child-header">
                                                 <span class="child-username">{{ child.username }}</span>
