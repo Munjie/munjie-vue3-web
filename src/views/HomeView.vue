@@ -1,6 +1,8 @@
 <template>
     <div class="home-view">
         <section class="hero">
+            <div class="hero-bg"></div>
+            <div class="hero-fade-bottom"></div>
             <div class="hero-content">
                 <h1 class="animate-fade-up">探索数字深渊</h1>
                 <p class="animate-fade-up delay-1">Vue3 / TypeScript / Design</p>
@@ -66,11 +68,11 @@ const currentPage = computed<number>({
     },
     set: (val) => {
         // 改变页码时，更新路由
-        router.push({ query: { ...route.query, page: val.toString() } })
+        router.push({query: {...route.query, page: val.toString()}})
     }
 })
 // --- 数据请求函数 ---
-const fetchPosts = async (page: number, size: number,keyword: string) => {
+const fetchPosts = async (page: number, size: number, keyword: string) => {
     loading.value = true
     ALL_POSTS.value = []
     try {
@@ -96,7 +98,7 @@ const fetchPosts = async (page: number, size: number,keyword: string) => {
 const handleCurrentChange = (val: number) => {
     currentPage.value = val
     // 切换页码后自动滚动到文章列表顶部
-    window.scrollTo({ top: 300, behavior: 'smooth' })
+    window.scrollTo({top: 300, behavior: 'smooth'})
 }
 
 onMounted(() => {
@@ -111,41 +113,6 @@ watch([currentPage, currentKeyword], ([newPage, newKeyword]) => {
 </script>
 
 <style scoped lang="scss">
-.hero {
-  height: 60vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  margin-bottom: 60px;
-
-  h1 {
-    font-size: 3.5rem;
-    font-weight: 900;
-    margin: 0;
-    background: linear-gradient(135deg, #fff 0%, #6366f1 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-
-    @media (max-width: 768px) {
-      font-size: 2.5rem;
-    }
-  }
-
-  p {
-    font-size: 1.2rem;
-    color: var(--text-secondary);
-    margin-top: 10px;
-    letter-spacing: 4px;
-  }
-}
-
-.container {
-  width: 90%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-bottom: 60px;
-}
 
 .section-title {
   font-size: 1.5rem;
@@ -161,7 +128,7 @@ watch([currentPage, currentKeyword], ([newPage, newKeyword]) => {
 
 // 入场动画
 .animate-fade-up {
-  animation: fadeUp 1.5s ease-out forwards;
+  animation: fadeUp 2s ease-out forwards;
   opacity: 0;
   transform: translateY(20px);
 }
@@ -176,7 +143,6 @@ watch([currentPage, currentKeyword], ([newPage, newKeyword]) => {
     transform: translateY(0);
   }
 }
-
 
 
 .pagination-area {
@@ -251,4 +217,106 @@ watch([currentPage, currentKeyword], ([newPage, newKeyword]) => {
     }
   }
 }
+
+
+.hero {
+  position: relative;
+  height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden; // 防止图片溢出
+  background-color: var(--bg-color);
+}
+
+// 1. 背景图片层样式
+.hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+  filter: brightness(0.6) blur(0px);
+}
+
+
+.hero-fade-bottom {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  z-index: 2;
+  inset: auto 0 0 0;
+  height: 300px;
+  pointer-events: none;
+    background: linear-gradient(
+            to bottom,
+            rgba(18, 18, 18, 0) 0%,
+            rgba(18, 18, 18, 0.5) 40%,
+            var(--bg-color) 100%
+    );
+    backface-visibility: hidden;
+    transform: translateZ(0);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+  //padding: 0 20px;
+    margin-bottom: 0;
+    padding-bottom: 20px;
+  h1 {
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin: 0;
+    color: #ffffff;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+
+    background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    @media (max-width: 768px) {
+      font-size: 2.8rem;
+    }
+  }
+
+  p {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.85); // 半透明白
+    margin-top: 15px;
+    letter-spacing: 6px;
+    font-weight: 300;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 60px;
+  position: relative;
+  z-index: 3;
+  margin-top: -20px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 30px;
+  border-left: 4px solid var(--accent-color);
+  padding-left: 15px;
+  // 确保标题颜色和背景对比明显
+  color: var(--text-primary);
+}
+
+
+
 </style>
