@@ -485,6 +485,11 @@ const fetchAllModel = async () => {
 }
 
 
+.glass-panel .md-editor-preview-wrapper {
+    background: #2b2b2b !important;
+}
+
+
 /* 主容器适配顶部导航 */
 .chat-main {
   flex: 1;
