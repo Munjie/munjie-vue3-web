@@ -48,20 +48,19 @@ import type {ArticleVO} from "../types/article.ts";
 const route = useRoute()
 const router = useRouter()
 const ALL_POSTS = ref<ArticleVO[]>([])
-const pageSize = ref(6) // 每页显示 6 篇文章
+const pageSize = ref(6)
 const totalPosts = ref(0)
 const loading = ref(false)
 
 // --- 新增：从路由中获取搜索关键词 ---
 const currentKeyword = computed<string>(() => {
-    // 如果路由中有 keyword 参数，则使用它，否则为空字符串
     return route.query.keyword ? String(route.query.keyword) : ''
 })
 
 // --- 计算属性：与路由同步的当前页码 ---
 const currentPage = computed<number>({
     get: () => {
-        // 从路由获取当前页码，默认为 1
+        // 从路由获取当前页码
         const page = parseInt(route.query.page as string || '1')
         return isNaN(page) || page < 1 ? 1 : page
     },
@@ -73,7 +72,7 @@ const currentPage = computed<number>({
 // --- 数据请求函数 ---
 const fetchPosts = async (page: number, size: number,keyword: string) => {
     loading.value = true
-    ALL_POSTS.value = [] // 清空列表，显示 Loading
+    ALL_POSTS.value = []
     try {
 
         let pageForm = {
@@ -86,7 +85,6 @@ const fetchPosts = async (page: number, size: number,keyword: string) => {
             totalPosts.value = response.data.total
     } catch (error) {
         console.error('Error fetching posts:', error)
-        // 可以在这里显示一个错误提示 ElementPlus Message
         ALL_POSTS.value = []
         totalPosts.value = 0
     } finally {
@@ -101,16 +99,6 @@ const handleCurrentChange = (val: number) => {
     window.scrollTo({ top: 300, behavior: 'smooth' })
 }
 
-/*// 1. 组件挂载时，加载第一页数据
-onMounted(() => {
-    fetchPosts(currentPage.value, pageSize.value)
-})
-
-// 2. 监听 currentPage 变化，重新请求数据
-watch(currentPage, (newPage) => {
-    fetchPosts(newPage, pageSize.value)
-})*/
-// 1. 组件挂载时，加载数据
 onMounted(() => {
     // 首次加载时，使用当前路由中的 keyword
     fetchPosts(currentPage.value, pageSize.value, currentKeyword.value)
@@ -118,7 +106,6 @@ onMounted(() => {
 
 // 2. 监听 currentPage 或 currentKeyword 变化，重新请求数据
 watch([currentPage, currentKeyword], ([newPage, newKeyword]) => {
-    // 当 keyword 变化时，currentPage 可能会被重置为 1，但监听器会捕获最新的值
     fetchPosts(newPage as number, pageSize.value, newKeyword as string)
 })
 </script>
@@ -172,9 +159,9 @@ watch([currentPage, currentKeyword], ([newPage, newKeyword]) => {
   margin-bottom: 24px;
 }
 
-// 简单入场动画
+// 入场动画
 .animate-fade-up {
-  animation: fadeUp 1s ease-out forwards;
+  animation: fadeUp 1.5s ease-out forwards;
   opacity: 0;
   transform: translateY(20px);
 }
@@ -190,6 +177,8 @@ watch([currentPage, currentKeyword], ([newPage, newKeyword]) => {
   }
 }
 
+
+
 .pagination-area {
   margin-top: 50px;
   padding-top: 20px;
@@ -197,9 +186,8 @@ watch([currentPage, currentKeyword], ([newPage, newKeyword]) => {
   justify-content: center;
 }
 
-// =======================
-// 高级分页栏样式 (深度定制)
-// =======================
+
+// 高级分页栏样式
 .premium-pagination {
   --el-pagination-bg-color: transparent; // 整体背景透明
 
@@ -221,7 +209,7 @@ watch([currentPage, currentKeyword], ([newPage, newKeyword]) => {
         color: var(--accent-color);
       }
 
-      // 当前激活页码 (科技感重点)
+      // 当前激活页码
       &.is-active {
         background: var(--accent-color) !important; // 使用主题色填充
         color: #fff !important;
