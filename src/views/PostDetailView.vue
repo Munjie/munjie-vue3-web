@@ -102,7 +102,7 @@
                                         @click="handleCommentLike(item)">
                            <span class="mini-icon" v-html="ThumbUpIcon"></span> {{ item.likes || '赞' }}
                         </span>
-                                <span class="reply-btn" @click="toggleReply(item.id,item.username)">回复</span>
+                                <span class="reply-btn" @click="toggleReply(item)">回复</span>
                             </div>
                             <div v-if="replyId === item.id" class="reply-input-wrapper glass-panel">
                                 <el-input
@@ -150,7 +150,7 @@
                             <div v-if="item.children && item.children.length > 0" class="child-comments">
                                 <div v-for="child in item.children" :key="child.id" class="child-item-wrapper">
                                     <div class="child-item">
-                                        <el-avatar :size="24" class="child-avatar" :src="item.avatar"></el-avatar>
+                                        <el-avatar :size="24" class="child-avatar" :src="child.avatar"></el-avatar>
                                         <div class="child-info">
                                             <div class="child-header">
                                                 <span class="child-username">{{ child.username }}</span>
@@ -165,7 +165,7 @@
                         <span class="mini-icon" v-html="ThumbUpIcon"></span>
                         {{ child.likes || '赞' }}
                     </span>
-                                                <span class="action-btn reply" @click="toggleReply(child.id, child.username)">回复</span>
+                                                <span class="action-btn reply" @click="toggleReply(child)">回复</span>
                                             </div>
                                         </div>
                                     </div>
@@ -251,6 +251,7 @@ const emojiList = ['😃', '😁', '😅', '🤣', '😘', '🥰', '😗', '😋
 const postLiked = ref(false)
 const postLikeCount = ref(0)
 const replyTargetName = ref('');
+const replyTargetId = ref(0);
 
 const props = defineProps(['id']);
 const viewTriggered = ref(false);
@@ -303,18 +304,20 @@ watch(() => post.value, (newPost) => {
 }, { immediate: true });
 
 
-const toggleReply = (id: number, username: string) => {
+const toggleReply = (item: any) => {
     if (!userStore.getToken) {
         ElMessage.warning('请登录后再回复')
         return
     }
-    if (replyId.value === id) {
+    if (replyId.value === item.id) {
         replyId.value = 0;
         replyTargetName.value = '';
+        replyTargetId.value = 0;
     } else {
-        replyId.value = id;
-        replyTargetName.value = username;
-        replyContent.value = ''; // 清空之前的输入
+        replyId.value = item.id;
+        replyTargetName.value = item.username;
+        replyContent.value = '';
+        replyTargetId.value = item.userId;
     }
 };
 // 处理文章点赞
@@ -404,12 +407,16 @@ const submitComment = async (parentId: number) => {
         ElMessage.warning('请输入内容')
         return
     }
+    if (parentId === 0) {
+        replyTargetId.value = 0;
+    }
     let contentForm = {
-        content: replyTargetName.value? '@' + replyTargetName.value + ' ' + content : content,
+        content:  content,
         articleId: post.value?.id,
         parentId: parentId,
         userId: userStore.getUserid,
-    }
+        replyTargetId:  replyTargetId.value,
+    };
 
     try {
         await addComment(contentForm)
