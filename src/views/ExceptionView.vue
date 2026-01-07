@@ -41,7 +41,7 @@ const errorTitle = computed(() => {
     return titles[errorCode.value as string] || '连接出错'
 })
 
-const errorDesc = computed(() => `抱歉，您访问的页面遇到了 ${errorCode.value} 错误，请稍后再试。`)
+const errorDesc = computed(() => `这不是你的错误，而是我的问题.`)
 
 const goHome = () => router.push('/')
 const goBack = () => router.back()

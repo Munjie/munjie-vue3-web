@@ -263,6 +263,10 @@ onMounted(async () => {
         await router.push('/404')
     }
     post.value = await getArticleById(postId)
+    if (post.value === null) {
+        await router.push('/404')
+        return
+    }
     await nextTick();
     contentLoaded.value = true;
     postLikeCount.value = post.value?.likes;
