@@ -5,43 +5,54 @@
                 <h3 style="text-align: center; margin-bottom: 30px; color: #333;">
                     微信扫码或长按识别登录
                 </h3>
-
                 <!-- 二维码 + 遮罩层容器 -->
                 <div class="qr-container">
                     <!-- 二维码图片（始终显示） -->
-                    <img v-if="qrImg" :src="qrImg" class="qr-img" />
+                    <img v-if="qrImg" :src="qrImg" class="qr-img"/>
                     <!-- 遮罩层：仅在有状态提示时显示（初始 waiting 时也显示，但透明度低，让二维码清晰可见） -->
                     <div class="qr-overlay" :class="loginStatus">
                         <!-- 加载中 -->
                         <div v-if="loginStatus === 'loading'" class="status loading">
-                            <el-icon class="is-loading icon"><Loading /></el-icon>
+                            <el-icon class="is-loading icon">
+                                <Loading/>
+                            </el-icon>
                             <p>加载中...</p>
                         </div>
                         <!-- 等待扫码：半透明，二维码仍可扫描 -->
                         <div v-if="loginStatus === 'waiting'" class="status waiting">
-                            <el-icon class="icon"><Scan /></el-icon>
+                            <el-icon class="icon">
+                                <Scan/>
+                            </el-icon>
                         </div>
                         <!-- 已扫码待确认状态：只显示大绿色打钩 -->
                         <div v-if="loginStatus === 'scanned'" class="status scanned">
-                            <el-icon class="success-icon"><Check /></el-icon>
-                            <!-- <p style="margin-top: 20px; font-size: 14px; color: #666;">请在手机上确认登录</p> -->
+                            <el-icon class="success-icon">
+                                <Check/>
+                            </el-icon>
+                            <p style="margin-top: 20px; font-size: 14px; color: #666;">请在手机上确认登录</p>
                         </div>
 
                         <!-- 刷新中 -->
                         <div v-if="loginStatus === 'refreshing'" class="status refreshing">
-                            <el-icon class="is-loading icon"><Loading /></el-icon>
+                            <el-icon class="is-loading icon">
+                                <Loading/>
+                            </el-icon>
                             <p>正在刷新...</p>
                         </div>
 
-                      <!-- 失败 -->
-                      <div v-if="loginStatus === 'failed'" class="status failed">
-                        <el-icon class="is-loading icon"><Loading /></el-icon>
-                        <p>获取失败，请刷新</p>
-                      </div>
+                        <!-- 失败 -->
+                        <div v-if="loginStatus === 'failed'" class="status failed">
+                            <el-icon class="is-loading icon">
+                                <Loading/>
+                            </el-icon>
+                            <p>获取失败，请刷新</p>
+                        </div>
 
                         <!-- 刷新按钮：始终可见 -->
                         <div class="refresh-btn" @click="refreshQr">
-                            <el-icon><Refresh /></el-icon>
+                            <el-icon>
+                                <Refresh/>
+                            </el-icon>
                         </div>
                     </div>
                 </div>
@@ -89,10 +100,10 @@ const loadQrCode = async () => {
     loginStatus.value = 'loading'
     try {
         const response = await axios.get('/api/wechat/qr', {responseType: 'blob'})
-      if(response.status !== 200) {
-        ElMessage.error('服务器错误')
-        return
-      }
+        if (response.status !== 200) {
+            ElMessage.error('服务器错误')
+            return
+        }
         scene.value = response.headers['x-scene'] || response.headers['X-Scene']
         if (!scene.value) {
             ElMessage.error('获取二维码失败，请刷新重新获取')
@@ -136,12 +147,12 @@ const connectWebSocket = () => {
             const userId = Number(parts[2])
             const username = parts[3]
             const avatar = parts[4]
-            performLogin(token, userId, username,avatar)
+            performLogin(token, userId, username, avatar)
         }
     }
 }
 
-const performLogin = async (token: string, userId: number, username: string,avatar: string) => {
+const performLogin = async (token: string, userId: number, username: string, avatar: string) => {
     localStorage.setItem('vuems_name', username)
     userStore.setUsername(username)
     userStore.setUserid(userId)
@@ -174,19 +185,9 @@ onUnmounted(() => {
     border-radius: 12px;
     background: #fff;
     padding: 50px 50px 60px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     text-align: center;
 }
-
-.login-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 40px;
-}
-
-.logo { width: 40px; }
-.login-title { font-size: 24px; font-weight: bold; color: #333; }
 
 /* 二维码容器 */
 .qr-container {
@@ -198,7 +199,7 @@ onUnmounted(() => {
     border-radius: 12px;
     overflow: hidden;
     background: #fff;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .qr-img {
@@ -210,7 +211,10 @@ onUnmounted(() => {
 /* 遮罩层 */
 .qr-overlay {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -218,19 +222,23 @@ onUnmounted(() => {
     pointer-events: none; /* 关键：初始允许点击穿透（刷新按钮除外） */
     transition: background 0.3s ease;
 }
+
 /* 加载中状态 */
 .qr-overlay.loading {
     background: rgba(255, 255, 255, 0.8);
     pointer-events: auto;
 }
+
 .qr-overlay.loading .status {
     color: #409eff;
 }
+
 /* 等待扫码：浅遮罩，二维码清晰可见，能正常扫描 */
 .qr-overlay.waiting {
     background: rgba(255, 255, 255, 0.2);
     pointer-events: none;
 }
+
 .qr-overlay.waiting .status {
     color: #999;
 }
@@ -250,15 +258,21 @@ onUnmounted(() => {
 
 /* 加载中状态 */
 .qr-overlay.failed {
-  background: rgba(255, 255, 255, 0.8);
-  pointer-events: auto;
+    background: rgba(255, 255, 255, 0.8);
+    pointer-events: auto;
 }
+
 .qr-overlay.failed .status {
-  color: #d11530;
+    color: #d11530;
 }
+
 @keyframes checkPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.08); }
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.08);
+    }
 }
 
 .success-icon {
@@ -268,18 +282,19 @@ onUnmounted(() => {
     animation: checkScale 0.8s ease-in-out, checkPulse 2s ease-in-out infinite 0.8s;
 }
 
-/* 可选：如果保留小文字提示的样式 */
-/* .qr-overlay.scanned p {
-  margin-top: 20px;
-  font-size: 14px;
-  color: #666;
-} */
+
+.qr-overlay.scanned p {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #666;
+}
 
 /* 刷新中 */
 .qr-overlay.refreshing {
     background: rgba(255, 255, 255, 0.8);
     pointer-events: auto;
 }
+
 .qr-overlay.refreshing .status {
     color: #409eff;
 }
@@ -294,15 +309,30 @@ onUnmounted(() => {
     margin-bottom: 16px;
 }
 
-.status.waiting .icon { color: #999; }
-.status.scanned .icon { color: #07c160; animation: pulse 1.5s infinite; }
-.status.refreshing .icon { color: #409eff; }
+.status.waiting .icon {
+    color: #999;
+}
+
+.status.scanned .icon {
+    color: #07c160;
+    animation: pulse 1.5s infinite;
+}
+
+.status.refreshing .icon {
+    color: #409eff;
+}
 
 /* 绿色打钩动画 */
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* 刷新按钮：右上角小图标 */
@@ -313,7 +343,7 @@ onUnmounted(() => {
     right: 12px;
     width: 36px;
     height: 36px;
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.05);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -323,7 +353,7 @@ onUnmounted(() => {
 }
 
 .refresh-btn:hover {
-    background: rgba(0,0,0,0.15);
+    background: rgba(0, 0, 0, 0.15);
     transform: rotate(180deg);
 }
 
