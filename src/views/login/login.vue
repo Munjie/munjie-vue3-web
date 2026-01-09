@@ -17,7 +17,7 @@
             </div>
 
             <div class="login-header">
-                <h2>{{ loginMode === 'qr' ? '微信扫码登录' : '欢迎回来' }}</h2>
+                <h2>{{ loginMode === 'qr' ? '微信扫码一键登录' : '欢迎回来' }}</h2>
                 <p>{{ loginMode === 'qr' ? '安全、便捷、快速' : '使用您的账号密码登录' }}</p>
             </div>
 
@@ -113,8 +113,8 @@
             </div>
 
             <div class="login-footer">
-                <p v-if="loginMode === 'pwd'">还没有账号？<span class="link">立即注册</span><span class="link"
-                                                                                                 @click="loginMode = 'qr'">扫码登录</span>
+                <p v-if="loginMode === 'pwd'">还没有账号？<!--<span class="link">立即注册</span>--><span class="link"
+                                                                                                 @click="loginMode = 'qr'">扫码注册登录</span>
                 </p>
                 <p v-else @click="loginMode = 'pwd'" class="link-switch">使用账号密码登录</p>
             </div>
@@ -129,6 +129,7 @@ import axios from 'axios'
 import {ElMessage, ElIcon} from 'element-plus'
 import {Check, Loading, Monitor, Refresh} from '@element-plus/icons-vue'
 import {useUserStore} from '../../stores'
+import {login} from "../../api/user.ts";
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -161,10 +162,8 @@ const handlePwdLogin = async () => {
     }
     isSubmitting.value = true
     try {
-        // 这里对接你的账号登录接口
-        // const res = await axios.post('/api/auth/login', loginForm)
-        // performLogin(res.token, ...)
-        ElMessage.success('登录成功（演示）')
+        const res = (await login(loginForm)).data;
+        await performLogin(res.token, res.userId, res.userName, res.avatar)
         await router.push('/')
     } finally {
         isSubmitting.value = false
@@ -246,7 +245,6 @@ const connectWebSocket = () => {
 }
 
 const performLogin = async (token: string, userId: number, username: string, avatar: string) => {
-    localStorage.setItem('vuems_name', username)
     userStore.setUsername(username)
     userStore.setUserid(userId)
     userStore.setToken(token)
