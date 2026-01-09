@@ -154,7 +154,7 @@ const pwdRules = {
     confirmPassword: [
         {required: true, message: '请再次输入密码', trigger: 'blur'},
         {
-            validator: (rule: any, value: string, callback: any) => {
+            validator: (_rule: any, value: string, callback: any) => {
                 if (value !== pwdForm.value.newPassword) {
                     callback(new Error('两次输入的密码不一致'))
                 } else {
@@ -175,7 +175,7 @@ const handleUpdatePassword = async () => {
                     id: userStore.getUserid,
                     password: pwdForm.value.confirmPassword
                 }
-                const res = await updatePwd(pwdFor)
+                await updatePwd(pwdFor)
                 ElMessage.success('密码修改成功，请重新登录')
                 showPasswordDialog.value = false
                  userStore.resetStore()
