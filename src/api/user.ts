@@ -18,3 +18,10 @@ export const login = (data?: object) => {
         data
     );
 };
+
+export const updatePwd = (data?: object) => {
+    return http.put(
+        '/api/user/update-pwd',
+        data
+    );
+};
