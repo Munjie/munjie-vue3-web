@@ -100,13 +100,28 @@ export const useUserStore = defineStore('useAllData', {
             router.push('/')
         },
         ensureToken() {
-            debugger
             if (!this.token) return ''
             if (this.expireAt && Date.now() > this.expireAt) {
                 this.resetStore()
                 return ''
             }
             return this.token
+        },
+        getUserName() {
+            if (!this.username) return ''
+            if (this.expireAt && Date.now() > this.expireAt) {
+                this.resetStore()
+                return ''
+            }
+            return this.username
+        },
+        getAva() {
+            if (!this.avatar) return ''
+            if (this.expireAt && Date.now() > this.expireAt) {
+                this.resetStore()
+                return ''
+            }
+            return this.avatar
         }
 
 

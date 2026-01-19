@@ -51,13 +51,13 @@
                     <router-link to="/about">关于</router-link>
 
                     <div class="user-status-pc">
-                        <template v-if="userStore.getToken">
+                        <template v-if="userStore.ensureToken()">
                             <el-dropdown trigger="click">
                                 <div class="avatar-wrapper">
-                                    <el-avatar :size="32" class="custom-avatar" :src="userStore.getAvatar">
+                                    <el-avatar :size="32" class="custom-avatar" :src="userStore.getAva()">
 <!--                                        {{ userStore.getUsername?.charAt(0) || 'U' }}-->
                                     </el-avatar>
-                                    <span class="user-name">{{ userStore.getUsername }}</span>
+                                    <span class="user-name">{{ userStore.getUserName() }}</span>
                                 </div>
                                 <template #dropdown>
                                     <el-dropdown-menu class="dark-dropdown">
@@ -103,13 +103,13 @@
                     </template>
 
                     <div class="mobile-menu-wrapper">
-                        <div class="mobile-user-profile" v-if="userStore.getToken">
+                        <div class="mobile-user-profile" v-if="userStore.ensureToken()">
                             <div class="profile-content">
-                                <el-avatar :size="48" class="premium-avatar" :src="userStore.getAvatar">
+                                <el-avatar :size="48" class="premium-avatar" :src="userStore.getAva()">
 <!--                                    {{ userStore.getUsername?.charAt(0).toUpperCase() }}-->
                                 </el-avatar>
                                 <div class="user-meta">
-                                    <span class="user-name">{{ userStore.getUsername }}</span>
+                                    <span class="user-name">{{ userStore.getUserName() }}</span>
                                 </div>
                             </div>
                         </div>
