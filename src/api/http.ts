@@ -75,7 +75,6 @@ service.interceptors.response.use(
         // 处理 HTTP 状态码错误
         let message = '';
         const status = error.response?.status;
-
         switch (status) {
             case 400:
                 message = '请求错误(400)';

@@ -1,5 +1,5 @@
 // src/stores/allData.ts
-import { defineStore } from 'pinia'
+import {defineStore} from 'pinia'
 import router from '../../router'
 
 interface AllDataState {
@@ -8,7 +8,8 @@ interface AllDataState {
     avatar: string
     userid: number
     token: string
-    permissions: any[] // 可定义具体 Permission 类型
+    expireAt: number | null
+    permissions: any[]
     currentPagePath: string
     locale: string
 }
@@ -22,9 +23,10 @@ function stateIni(): AllDataState {
         avatar: '',
         userid: 0,
         token: '',
+        expireAt: null,
         permissions: [],
         currentPagePath: '/',
-        locale: 'en'
+        locale: 'en',
     }
 }
 
@@ -36,7 +38,17 @@ export const useUserStore = defineStore('useAllData', {
         getUsername: (state) => state.username,
         getAvatar: (state) => state.avatar,
         getUserid: (state) => state.userid,
-        getToken: (state) => state.token,
+        // getToken: (state) => state.token,
+        getToken: (state) => {
+            if (!state.token) return ''
+            if (state.expireAt && new Date().getTime() > state.expireAt) {
+                // token 已过期：清除并返回空
+                const store = useUserStore()
+                store.resetStore()
+                return ''
+            }
+            return state.token
+        },
         getPermissions: (state) => state.permissions,
         getLocale: (state) => state.locale,
         getCurrentPagePath: (state) => state.currentPagePath,
@@ -55,8 +67,15 @@ export const useUserStore = defineStore('useAllData', {
             this.userid = userid
         },
         // 设置 token
-        setToken(token: string) {
+        /*  setToken(token: string) {
+              this.token = token
+          },*/
+        setToken(token: string, expireIn?: number) {
             this.token = token
+            if (expireIn) {
+                // 保存过期时间戳（毫秒）
+                this.expireAt = new Date().getTime() + expireIn * 1000
+            }
         },
         // 权限
         setPermissions(val: any[]) {
@@ -80,12 +99,23 @@ export const useUserStore = defineStore('useAllData', {
             this.resetStore()
             router.push('/')
         },
+        ensureToken() {
+            debugger
+            if (!this.token) return ''
+            if (this.expireAt && Date.now() > this.expireAt) {
+                this.resetStore()
+                return ''
+            }
+            return this.token
+        }
+
+
     },
-    // Persist 配置（修正：移除 enabled 和 strategies，使用 pick）
+    // Persist 配置
     persist: {
         key: 'user-store',
         storage: localStorage,
-        pick: ['token',  'username',  'avatar', 'userid'] // 使用 pick 指定持久化字段
+        pick: ['token', 'expireAt', 'username', 'avatar', 'userid'] // 使用 pick 指定持久化字段
     }
 })
 

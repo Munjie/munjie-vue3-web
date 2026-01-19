@@ -53,13 +53,16 @@ const router = createRouter({
 
 router.beforeEach((to, _from, next) => {
     const userStore = useUserStore();
-    const token: string = userStore.getToken || localStorage.getItem('token') || '';
-
+    const token: string = userStore.ensureToken();
+    debugger
     if (to.path === '/login' && token) {
         next('/');
         return;
     }
-
+    if (to.path === '/chat' && !token) {
+        next('/login');
+        return;
+    }
     next();
 });
 

@@ -163,7 +163,7 @@ const handlePwdLogin = async () => {
     isSubmitting.value = true
     try {
         const res = (await login(loginForm)).data;
-        await performLogin(res.token, res.userId, res.userName, res.avatar)
+        await performLogin(res.token, res.userId, res.userName, res.avatar,res.expire)
         await router.push('/')
     } finally {
         isSubmitting.value = false
@@ -239,15 +239,16 @@ const connectWebSocket = () => {
             const userId = Number(parts[2])
             const username = parts[3]
             const avatar = parts[4]
-            performLogin(token, userId, username, avatar)
+            const expire = parts[5]
+            performLogin(token, userId, username, avatar, expire)
         }
     }
 }
 
-const performLogin = async (token: string, userId: number, username: string, avatar: string) => {
+const performLogin = async (token: string, userId: number, username: string, avatar: string,expire:number) => {
     userStore.setUsername(username)
     userStore.setUserid(userId)
-    userStore.setToken(token)
+    userStore.setToken(token,expire)
     userStore.setAvatar(avatar)
     ElMessage.success('登录成功！')
     await router.push('/')

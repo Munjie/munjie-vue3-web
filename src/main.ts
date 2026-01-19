@@ -16,14 +16,12 @@ import {createPinia} from "pinia";
 const pina = createPinia();
 pina.use(piniaPluginPersistedstate);
 const app = createApp(App)
-
+app.use(pina)
 // 注册所有图标
+app.use(ElementPlus)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
 }
-
 app.use(router)
-app.use(ElementPlus)
 setupStore(app)
-app.use(pina)
 app.mount('#app')
