@@ -34,6 +34,11 @@ const router = createRouter({
             component: () => import('../views/Profile.vue')
         },
         {
+            path: '/log',
+            name: 'log',
+            component: () => import('../views/LogViewer.vue')
+        },
+        {
             path: '/exception/:code',
             name: 'Exception',
             component: () => import('../views/ExceptionView.vue'),
@@ -54,7 +59,6 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
     const userStore = useUserStore();
     const token: string = userStore.ensureToken();
-    debugger
     if (to.path === '/login' && token) {
         next('/');
         return;
