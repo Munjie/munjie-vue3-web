@@ -66,7 +66,9 @@ service.interceptors.response.use(
                     return Promise.reject(new Error(message || 'Error'));
                 }
             }
-        }else {
+        }else if (response.status === 401){
+            router.push({ name: 'login' })
+        } else {
             ElMessage.error( '系统错误')
             return Promise.reject(new Error('Error'));
         }
