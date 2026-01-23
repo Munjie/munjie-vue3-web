@@ -64,7 +64,10 @@ router.beforeEach((to, _from, next) => {
         return;
     }
     if (to.path === '/chat' && !token) {
-        next('/login');
+        next({
+            path: '/login',
+            query: { redirect: to.fullPath }
+        })
         return;
     }
     next();

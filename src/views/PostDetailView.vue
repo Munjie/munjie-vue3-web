@@ -52,39 +52,49 @@
                 </h3>
 
                 <div class="comment-input-wrapper glass-panel">
-                    <el-input
-                            v-model="commentForm.content"
-                            type="textarea"
-                            :rows="3"
-                            placeholder="说点什么吧..."
-                            maxlength="200"
-                            class="dark-input"
-                    />
-                    <div class="input-footer">
-                        <el-popover
-                                placement="top-start"
-                                :width="300"
-                                trigger="click"
-                                popper-class="custom-emoji-box"
-                        >
-                            <template #reference>
-                                <div class="emoji-trigger-btn">
-                                    <el-icon :size="20">
-                                        <EmojiSmile/>
-                                    </el-icon>
-                                </div>
-                            </template>
-                            <div class="emoji-scroll-container">
-                            <div class="emoji-list">
+                    <template v-if="isLogin">
+                        <el-input
+                                v-model="commentForm.content"
+                                type="textarea"
+                                :rows="3"
+                                placeholder="说点什么吧..."
+                                maxlength="200"
+                                class="dark-input"
+                        />
+                        <div class="input-footer">
+                            <el-popover
+                                    placement="top-start"
+                                    :width="300"
+                                    trigger="click"
+                                    popper-class="custom-emoji-box"
+                            >
+                                <template #reference>
+                                    <div class="emoji-trigger-btn">
+                                        <el-icon :size="20">
+                                            <EmojiSmile/>
+                                        </el-icon>
+                                    </div>
+                                </template>
+                                <div class="emoji-scroll-container">
+                                    <div class="emoji-list">
                 <span v-for="emoji in emojiList" :key="emoji" @click="addEmoji(emoji, 'main')">
                     {{ emoji }}
                 </span>
-                            </div>
-                            </div>
-                        </el-popover>
-                        <el-button type="primary" round @click="submitComment(0)"
-                                   :disabled="!commentForm.content.trim()">发表评论
-                        </el-button>
+                                    </div>
+                                </div>
+                            </el-popover>
+                            <el-button type="primary" round @click="submitComment(0)"
+                                       :disabled="!commentForm.content.trim()">发表评论
+                            </el-button>
+                        </div>
+                    </template>
+                    <div v-else class="login-guide-mask">
+                        <div class="guide-content">
+                            <el-icon class="lock-icon">
+                                <Lock/>
+                            </el-icon>
+                            <span>请先 <router-link :to="`/login?redirect=${route.fullPath}`" class="login-link">登录</router-link> 后评论</span>
+                        </div>
                     </div>
                 </div>
 
@@ -172,28 +182,32 @@
 
                                     <div v-if="replyId === child.id" class="reply-input-wrapper child-reply-box">
                                         <el-input
-                                            v-model="replyContent"
-                                            type="textarea"
-                                            :rows="2"
-                                            :placeholder="`回复 @${replyTargetName}`"
-                                            class="dark-input"
+                                                v-model="replyContent"
+                                                type="textarea"
+                                                :rows="2"
+                                                :placeholder="`回复 @${replyTargetName}`"
+                                                class="dark-input"
                                         />
                                         <div class="input-footer mini">
                                             <el-popover popper-class="emoji-popover" trigger="click" :width="280">
                                                 <template #reference>
                                                     <div class="emoji-trigger-btn mini">
-                                                        <el-icon :size="16"><EmojiSmile /></el-icon>
+                                                        <el-icon :size="16">
+                                                            <EmojiSmile/>
+                                                        </el-icon>
                                                     </div>
                                                 </template>
                                                 <div class="emoji-list">
-                                                    <span v-for="emoji in emojiList" :key="emoji" @click="addEmoji(emoji, 'reply')">{{ emoji }}</span>
+                                                    <span v-for="emoji in emojiList" :key="emoji"
+                                                          @click="addEmoji(emoji, 'reply')">{{ emoji }}</span>
                                                 </div>
                                             </el-popover>
                                             <div class="right-btns">
                                                 <el-button size="small" link @click="replyId = 0">取消</el-button>
                                                 <el-button size="small" type="primary" round
                                                            :disabled="!replyContent.trim()"
-                                                           @click="submitComment(item.id)">发送</el-button>
+                                                           @click="submitComment(item.id)">发送
+                                                </el-button>
                                             </div>
                                         </div>
                                     </div>
@@ -216,7 +230,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, watch, nextTick,onUnmounted} from 'vue'
+import {ref, onMounted, watch, nextTick, onUnmounted} from 'vue'
 import {useRoute} from 'vue-router'
 import {MdPreview} from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
@@ -226,8 +240,11 @@ import router from "../router";
 import {ElMessage} from "element-plus";
 import {useUserStore} from '../stores'
 import {getComments, addComment, updateArticleLike, updateCommentLike} from "../api/comment.ts"
-import {ChatDotRound, Calendar, View} from '@element-plus/icons-vue'
+import {ChatDotRound, Calendar, View, Lock} from '@element-plus/icons-vue'
 import EmojiSmile from '../components/icons/SmilSvg.vue'
+import {computed} from 'vue'
+
+
 
 const ThumbUpIcon = `
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -275,6 +292,9 @@ onMounted(async () => {
 })
 
 
+const isLogin = computed(() => {
+    return !!userStore.ensureToken();
+})
 const initObserver = () => {
     const target = document.querySelector('.post-body');
     if (!target) {
@@ -292,10 +312,9 @@ const initObserver = () => {
                 }
             }
         });
-    }, { threshold: [0.1, 0.5] });
+    }, {threshold: [0.1, 0.5]});
     observer.observe(target);
 };
-
 
 
 // 关键：监听数据加载完成后再初始化
@@ -305,7 +324,7 @@ watch(() => post.value, (newPost) => {
             initObserver();
         });
     }
-}, { immediate: true });
+}, {immediate: true});
 
 
 const toggleReply = (item: any) => {
@@ -336,7 +355,7 @@ const handlePostLike = async () => {
     postLikeCount.value += postLiked.value ? 1 : -1;
 
     try {
-        const res = await updateArticleLike(post.value?.id,userStore.getUserid);
+        const res = await updateArticleLike(post.value?.id, userStore.getUserid);
         postLiked.value = res.liked;
         postLikeCount.value = res.likeCount;
 
@@ -369,7 +388,7 @@ const handleCommentLike = async (item: any) => {
     item.likes = (item.likes || 0) + (item.isLiked ? 1 : -1)
     try {
 
-        const res = await updateCommentLike(item.id,userStore.getUserid);
+        const res = await updateCommentLike(item.id, userStore.getUserid);
         item.isLiked = res.liked;
         item.likes = res.likeCount;
 
@@ -393,7 +412,7 @@ const addEmoji = (emoji: string, type: 'main' | 'reply') => {
 const loadComments = async () => {
     commentsLoading.value = true
     setTimeout(async () => {
-        commentList.value = await getComments(post.value?.id,userStore.getUserid)
+        commentList.value = await getComments(post.value?.id, userStore.getUserid)
         commentsLoading.value = false
     }, 500)
 }
@@ -415,11 +434,11 @@ const submitComment = async (parentId: number) => {
         replyTargetId.value = 0;
     }
     let contentForm = {
-        content:  content,
+        content: content,
         articleId: post.value?.id,
         parentId: parentId,
         userId: userStore.getUserid,
-        replyTargetId:  replyTargetId.value,
+        replyTargetId: replyTargetId.value,
     };
 
     try {
@@ -750,6 +769,47 @@ onUnmounted(() => {
   &:focus-within {
     border-color: var(--accent-color);
     background: rgba(255, 255, 255, 0.04);
+  }
+
+  // 未登录引导样式
+  .login-guide-mask {
+    height: 100px; // 与输入框高度接近
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+
+    .guide-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: #9aa0a6;
+      font-size: 14px;
+
+      .lock-icon {
+        font-size: 24px;
+        color: #555;
+      }
+
+      .login-link {
+        color: var(--el-color-primary); // 使用 Element 主题色
+        text-decoration: none;
+        font-weight: bold;
+        margin: 0 4px;
+        padding: 2px 8px;
+        background: rgba(64, 158, 255, 0.1);
+        border-radius: 4px;
+        transition: all 0.2s;
+
+        &:hover {
+          background: rgba(64, 158, 255, 0.2);
+          text-decoration: underline;
+        }
+      }
+    }
   }
 }
 
@@ -1129,79 +1189,90 @@ onUnmounted(() => {
     }
   }
 }
+
 /* 子评论容器 */
 .child-comments {
-    margin-top: 15px;
-    padding: 12px 15px;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 12px;
+  margin-top: 15px;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
 
-    .child-item-wrapper {
-        margin-bottom: 15px;
-        &:last-child { margin-bottom: 0; }
+  .child-item-wrapper {
+    margin-bottom: 15px;
+
+    &:last-child {
+      margin-bottom: 0;
     }
+  }
 }
 
 /* 子评论头部：名字与时间同行 */
 .child-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
 
-    .child-username {
-        font-size: 0.85rem;
-        color: var(--accent-color);
-        font-weight: 600;
-    }
+  .child-username {
+    font-size: 0.85rem;
+    color: var(--accent-color);
+    font-weight: 600;
+  }
 
-    .child-time {
-        font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.3);
-    }
+  .child-time {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.3);
+  }
 }
 
 /* 子评论操作按钮样式 */
 .child-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 6px;
+
+  .action-btn {
+    font-size: 0.75rem; /* 比一级评论小一号 */
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
     display: flex;
-    gap: 15px;
-    margin-top: 6px;
+    align-items: center;
+    gap: 3px;
+    transition: all 0.2s;
 
-    .action-btn {
-        font-size: 0.75rem; /* 比一级评论小一号 */
-        color: rgba(255, 255, 255, 0.4);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 3px;
-        transition: all 0.2s;
-
-        &:hover {
-            color: var(--accent-color);
-        }
-
-        &.is-liked {
-            color: #a855f7;
-            .mini-icon { transform: scale(1.1); }
-        }
-
-        .mini-icon {
-            font-size: 12px;
-            :deep(svg) { width: 14px; height: 14px; }
-        }
+    &:hover {
+      color: var(--accent-color);
     }
+
+    &.is-liked {
+      color: #a855f7;
+
+      .mini-icon {
+        transform: scale(1.1);
+      }
+    }
+
+    .mini-icon {
+      font-size: 12px;
+
+      :deep(svg) {
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
 }
 
 /* 嵌套的回复框微调 */
 .child-reply-box {
-    margin-top: 10px;
-    background: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
 
-    :deep(.el-textarea__inner) {
-        min-height: 60px !important;
-        font-size: 0.9rem !important;
-    }
+  :deep(.el-textarea__inner) {
+    min-height: 60px !important;
+    font-size: 0.9rem !important;
+  }
 }
 </style>
 

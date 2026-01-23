@@ -124,13 +124,14 @@
 
 <script setup lang="ts">
 import {ref, reactive, onMounted, onUnmounted} from 'vue'
-import {useRouter} from 'vue-router'
 import axios from 'axios'
 import {ElMessage, ElIcon} from 'element-plus'
 import {Check, Loading, Monitor, Refresh} from '@element-plus/icons-vue'
 import {useUserStore} from '../../stores'
 import {login} from "../../api/user.ts";
+import { useRoute, useRouter } from 'vue-router'
 
+const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const qrImg = ref<string>('')
@@ -164,7 +165,6 @@ const handlePwdLogin = async () => {
     try {
         const res = (await login(loginForm)).data;
         await performLogin(res.token, res.userId, res.userName, res.avatar,res.expire)
-        await router.push('/')
     } finally {
         isSubmitting.value = false
     }
@@ -251,7 +251,12 @@ const performLogin = async (token: string, userId: number, username: string, ava
     userStore.setToken(token,expire)
     userStore.setAvatar(avatar)
     ElMessage.success('登录成功！')
-    await router.push('/')
+    // 2. 获取重定向地址
+    const redirectPath = route.query.redirect as string || '/'
+
+    // 3. 跳转
+    router.replace(redirectPath)
+    // await router.push('/')
 }
 
 

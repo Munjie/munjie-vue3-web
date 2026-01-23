@@ -5,7 +5,7 @@
             <div class="hero-fade-bottom"></div>
             <div class="hero-content">
                 <h1 class="animate-fade-up">探索数字深渊</h1>
-                <p class="animate-fade-up delay-1">Vue3 / TypeScript / Design</p>
+<!--                <p class="animate-fade-up delay-1">Vue3 / TypeScript / Design</p>-->
             </div>
         </section>
 
