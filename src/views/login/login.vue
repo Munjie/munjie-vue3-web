@@ -155,7 +155,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, onUnmounted, reactive, ref} from 'vue'
+import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
 import axios from 'axios'
 import {ElIcon, ElMessage} from 'element-plus'
 import {Back, Check, Loading, Monitor, Refresh} from '@element-plus/icons-vue'
@@ -187,7 +187,6 @@ const loginForm = reactive({
 
 // 统一跳转处理
 const handleOAuthLogin = (platform: string) => {
-    // 获取当前登录页 URL 里的 redirect 参数
     const redirect = route.query.redirect as string || '/'
     if ("github" === platform) {
         window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&state=${redirect}`;
@@ -195,9 +194,6 @@ const handleOAuthLogin = (platform: string) => {
         window.location.href = isDevelopment ? 'http://localhost:8090/system/gitee' : 'https://www.munjie.com/api/system/gitee';
     }
 
-    // 跳转到后端 OAuth 入口，并携带目标跳转地址
-    // 后端接收后，在生成 OAuth 授权链接时放入 state 参数或 session
-    // window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/login/${platform}?redirect=${encodeURIComponent(redirect)}`
 }
 
 const gitHubLogin = () => handleOAuthLogin('github')
@@ -211,18 +207,33 @@ const toggleLoginMode = () => {
 }
 
 
+const checkUrlError = () => {
+    const error = route.query.error as string
+    if (error) {
+        ElMessage({
+            message: decodeURIComponent(error),
+            type: 'error',
+            duration: 5000,
+            showClose: true
+        })
+        const query = { ...route.query }
+        delete query.error
+        router.replace({ query })
+    }
+}
+
+onMounted(() => {
+    loadQrCode()
+    checkUrlError()
+})
+
+
+watch(() => route.query.error, () => {
+    checkUrlError()
+})
 
 
 
-
-// const gitHubLogin = () => {
-//     const redirectPath = route.query.redirect as string || '/'
-//     window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&state=${redirectPath}`;
-// };
-//
-// const giteLogin = () => {
-//     window.location.href = isDevelopment ? 'http://localhost:8090/system/gitee' : 'https://www.munjie.com/api/system/gitee';
-// };
 
 // 密码登录逻辑
 const handlePwdLogin = async () => {
@@ -328,7 +339,6 @@ const performLogin = async (token: string, userId: number, username: string, ava
 }
 
 
-onMounted(() => loadQrCode())
 onUnmounted(() => {
     if (ws) ws.close()
     if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl)
