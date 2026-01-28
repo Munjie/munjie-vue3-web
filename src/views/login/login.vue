@@ -112,13 +112,43 @@
                 </transition>
             </div>
 
-            <div class="login-footer">
-                <p v-if="loginMode === 'pwd'">还没有账号？<!--<span class="link">立即注册</span>-->
+<!--            <div class="login-footer">
+                <p v-if="loginMode === 'pwd'">还没有账号？&lt;!&ndash;<span class="link">立即注册</span>&ndash;&gt;
                     <span class="link" @click="loginMode = 'qr'">扫码注册登录</span>
                     <span class="link" @click="gitHubLogin">GitHub登录</span>
                     <span class="link" @click="giteLogin">Gitee登录</span>
                 </p>
                 <p v-else @click="loginMode = 'pwd'" class="link-switch">使用账号密码登录</p>
+            </div>-->
+            <div class="login-footer">
+                <template v-if="loginMode === 'pwd'">
+                    <div class="register-hint">
+                        还没有账号？<span class="link" @click="loginMode = 'qr'">扫码一键登录</span>
+                    </div>
+
+                    <div class="oauth-divider">
+                        <span class="divider-text">其他登录方式</span>
+                    </div>
+
+                    <div class="oauth-group">
+                        <div class="oauth-item github" title="GitHub登录" @click="gitHubLogin">
+<!--                            <i class="iconfont icon-github"></i>-->
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                                <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                            </svg>
+                        </div>
+                        <div class="oauth-item gitee" title="Gitee登录" @click="giteeLogin">
+<!--                            <i class="iconfont icon-gitee"></i>-->
+                            <svg viewBox="0 0 1024 1024" width="22" height="22" fill="currentColor">
+                                <path d="M512 1024C230.4 1024 0 793.6 0 512S230.4 0 512 0s512 230.4 512 512-230.4 512-512 512z m259.2-569.6H480c-12.8 0-25.6 12.8-25.6 25.6v64c0 12.8 12.8 25.6 25.6 25.6h176c12.8 0 25.6 12.8 25.6 25.6v12.8c0 41.6-35.2 76.8-76.8 76.8h-240c-12.8 0-25.6-12.8-25.6-25.6V416c0-41.6 35.2-76.8 76.8-76.8h355.2c12.8 0 25.6-12.8 25.6-25.6v-64c0-12.8-12.8-25.6-25.6-25.6H416c-105.6 0-188.8 86.4-188.8 188.8V768c0 12.8 12.8 25.6 25.6 25.6h400c105.6 0 188.8-86.4 188.8-188.8V480c0-12.8-12.8-25.6-25.6-25.6z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </template>
+
+                <p v-else @click="loginMode = 'pwd'" class="link-switch">
+                    <el-icon><Back /></el-icon> 账号密码登录
+                </p>
             </div>
         </div>
     </div>
@@ -128,7 +158,7 @@
 import {onMounted, onUnmounted, reactive, ref} from 'vue'
 import axios from 'axios'
 import {ElIcon, ElMessage} from 'element-plus'
-import {Check, Loading, Monitor, Refresh} from '@element-plus/icons-vue'
+import {Back, Check, Loading, Monitor, Refresh} from '@element-plus/icons-vue'
 import {useUserStore} from '../../stores'
 import {login} from "../../api/user.ts";
 import {useRoute, useRouter} from 'vue-router'
@@ -146,11 +176,32 @@ let loginStatus = ref<'loading' | 'waiting' | 'scanned' | 'refreshing' | 'failed
 const loginMode = ref<'qr' | 'pwd'>('qr')
 const isSubmitting = ref(false)
 const rememberMe = ref(true)
+const clientId = isDevelopment ? 'Ov23li0M3hbMSpySq6nT' : 'Ov23li4PvOK3cTnIgni8'
 // 账号登录表单
 const loginForm = reactive({
     username: '',
     password: ''
 })
+
+
+
+// 统一跳转处理
+const handleOAuthLogin = (platform: string) => {
+    // 获取当前登录页 URL 里的 redirect 参数
+    const redirect = route.query.redirect as string || '/'
+    if ("github" === platform) {
+        window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&state=${redirect}`;
+    }else {
+        window.location.href = isDevelopment ? 'http://localhost:8090/system/gitee' : 'https://www.munjie.com/api/system/gitee';
+    }
+
+    // 跳转到后端 OAuth 入口，并携带目标跳转地址
+    // 后端接收后，在生成 OAuth 授权链接时放入 state 参数或 session
+    // window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/login/${platform}?redirect=${encodeURIComponent(redirect)}`
+}
+
+const gitHubLogin = () => handleOAuthLogin('github')
+const giteeLogin = () => handleOAuthLogin('gitee')
 
 const toggleLoginMode = () => {
     loginMode.value = loginMode.value === 'qr' ? 'pwd' : 'qr'
@@ -160,21 +211,18 @@ const toggleLoginMode = () => {
 }
 
 
-const clientId = isDevelopment ? 'Ov23li0M3hbMSpySq6nT' : 'Ov23li4PvOK3cTnIgni8'
+
+
+
 
 // const gitHubLogin = () => {
-//     window.location.href = "https://github.com/login/oauth/authorize?client_id=" + clientId;
+//     const redirectPath = route.query.redirect as string || '/'
+//     window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&state=${redirectPath}`;
+// };
 //
-// }
-
-const gitHubLogin = () => {
-    const redirectPath = route.query.redirect as string || '/'
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&state=${redirectPath}`;
-};
-
-const giteLogin = () => {
-    window.location.href = isDevelopment ? 'http://localhost:8090/system/gitee' : 'https://www.munjie.com/api/system/gitee';
-};
+// const giteLogin = () => {
+//     window.location.href = isDevelopment ? 'http://localhost:8090/system/gitee' : 'https://www.munjie.com/api/system/gitee';
+// };
 
 // 密码登录逻辑
 const handlePwdLogin = async () => {
@@ -436,18 +484,18 @@ onUnmounted(() => {
   border-radius: 12px;
 }
 
-.login-footer {
-  text-align: center;
-  margin-top: 30px;
-  font-size: 13px;
-  color: #666;
-
-  .link, .link-switch {
-    color: var(--el-color-primary);
-    cursor: pointer;
-    margin-left: 5px;
-  }
-}
+//.login-footer {
+//  text-align: center;
+//  margin-top: 30px;
+//  font-size: 13px;
+//  color: #666;
+//
+//  .link, .link-switch {
+//    color: var(--el-color-primary);
+//    cursor: pointer;
+//    margin-left: 5px;
+//  }
+//}
 
 /* 动画 */
 .fade-slide-enter-active, .fade-slide-leave-active {
@@ -674,5 +722,95 @@ onUnmounted(() => {
 .refresh-btn .el-icon {
   font-size: 18px;
   color: #666;
+}
+
+
+.login-footer {
+    margin-top: 25px;
+    text-align: center;
+
+    .register-hint {
+        font-size: 13px;
+        color: #9aa0a6;
+        margin-bottom: 20px;
+
+        .link {
+            color: var(--el-color-primary);
+            cursor: pointer;
+            margin-left: 5px;
+            &:hover { text-decoration: underline; }
+        }
+    }
+
+    // 分隔线样式
+    .oauth-divider {
+        display: flex;
+        align-items: center;
+        margin: 20px 0;
+
+        &::before, &::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .divider-text {
+            padding: 0 12px;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+    }
+
+    // 图标组布局
+    .oauth-group {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+
+        .oauth-item {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+            i {
+                font-size: 22px;
+                color: #ccc;
+            }
+
+            &:hover {
+                transform: translateY(-3px);
+                background: rgba(255, 255, 255, 0.15);
+                border-color: var(--el-color-primary);
+
+                i { color: #fff; }
+
+                &.github { box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
+                &.gitee {
+                    border-color: #bb2d3b;
+                    box-shadow: 0 0 15px rgba(187, 45, 59, 0.2);
+                    i { color: #bb2d3b; }
+                }
+            }
+        }
+    }
+
+    .link-switch {
+        font-size: 13px;
+        color: #888;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        &:hover { color: var(--el-color-primary); }
+    }
 }
 </style>

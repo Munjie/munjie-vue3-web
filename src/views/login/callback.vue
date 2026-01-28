@@ -6,9 +6,10 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import {onMounted} from 'vue';
+import {useRouter} from 'vue-router';
 import {useUserStore} from "../../stores";
+
 const router = useRouter();
 const userStore = useUserStore();
 
@@ -23,16 +24,12 @@ const handleLogin = () => {
     const username = urlParams.get('username');
     const avatar = urlParams.get('avatar');
     const targetPathRaw = urlParams.get('state');
-
-    debugger
     if (token) {
         if (typeof username === "string") {
             userStore.setUsername(username)
         }
-
         userStore.setUserid(userId)
-
-        userStore.setToken(token,65555)
+        userStore.setToken(token, 65555)
         if (typeof avatar === "string") {
             userStore.setAvatar(avatar)
         }
@@ -56,6 +53,7 @@ const handleLogin = () => {
     align-items: center;
     background-color: #f0f2f5;
 }
+
 /* 简单写一个转圈圈的动画 */
 .loading-spinner {
     width: 50px;
@@ -66,7 +64,10 @@ const handleLogin = () => {
     animation: spin 1s linear infinite;
     margin-bottom: 20px;
 }
+
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 </style>
