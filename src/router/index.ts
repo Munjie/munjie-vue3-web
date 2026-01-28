@@ -48,6 +48,12 @@ const router = createRouter({
         {
             path: '/:pathMatch(.*)*',
             redirect: '/exception/404'
+        },
+        {
+            path: '/oauth/callback',
+            name: 'callback',
+            component: () => import('../views/login/callback.vue'),
+            meta: { title: '正在登录...' }
         }
     ],
     scrollBehavior() {
@@ -68,6 +74,10 @@ router.beforeEach((to, _from, next) => {
             path: '/login',
             query: { redirect: to.fullPath }
         })
+        return;
+    }
+    if (to.path === '/oauth/callback') {
+        next();
         return;
     }
     next();

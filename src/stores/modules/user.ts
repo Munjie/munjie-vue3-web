@@ -93,6 +93,8 @@ export const useUserStore = defineStore('useAllData', {
             // 重置为初始状态
             Object.assign(this.$state, stateIni())
             localStorage.removeItem('user-store')
+            localStorage.clear();
+            sessionStorage.clear();
         },
         // 登出方法
         logout() {

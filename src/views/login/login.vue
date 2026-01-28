@@ -18,7 +18,7 @@
 
             <div class="login-header">
                 <h2>{{ loginMode === 'qr' ? '微信扫码一键登录' : '欢迎回来' }}</h2>
-                <p>{{ loginMode === 'qr' ? '安全、便捷、快速' : '使用您的账号密码登录' }}</p>
+                <p>{{ loginMode === 'qr' ? '微信扫一扫或长按识别' : '使用您的账号密码登录' }}</p>
             </div>
 
             <div class="login-body">
@@ -79,10 +79,10 @@
 
                     <div v-else class="form-view">
                         <el-form :model="loginForm" label-position="top">
-                            <el-form-item label="用户名 / 邮箱">
+                            <el-form-item label="用户名">
                                 <el-input
                                         v-model="loginForm.username"
-                                        placeholder="请输入账号"
+                                        placeholder="请输入用户名"
                                         prefix-icon="User"
                                 />
                             </el-form-item>
@@ -113,9 +113,7 @@
             </div>
 
             <div class="login-footer">
-                <p v-if="loginMode === 'pwd'">还没有账号？<!--<span class="link">立即注册</span>--><span class="link"
-                                                                                                 @click="loginMode = 'qr'">扫码注册登录</span>
-                </p>
+                <p v-if="loginMode === 'pwd'">还没有账号？<!--<span class="link">立即注册</span>--><span class="link" @click="loginMode = 'qr'">扫码注册登录</span> <span class="link" @click="gitHubLogin">GitHub登录</span></p>
                 <p v-else @click="loginMode = 'pwd'" class="link-switch">使用账号密码登录</p>
             </div>
         </div>
@@ -130,7 +128,7 @@ import {Check, Loading, Monitor, Refresh} from '@element-plus/icons-vue'
 import {useUserStore} from '../../stores'
 import {login} from "../../api/user.ts";
 import { useRoute, useRouter } from 'vue-router'
-
+const isDevelopment = import.meta.env.MODE === 'development'
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
@@ -155,6 +153,19 @@ const toggleLoginMode = () => {
         loadQrCode()
     }
 }
+
+
+const clientId = isDevelopment ? 'Ov23li0M3hbMSpySq6nT' : 'Ov23li4PvOK3cTnIgni8'
+
+// const gitHubLogin = () => {
+//     window.location.href = "https://github.com/login/oauth/authorize?client_id=" + clientId;
+//
+// }
+
+const gitHubLogin = () => {
+    const redirectPath = route.query.redirect as string || '/'
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&state=${redirectPath}`;
+};
 
 // 密码登录逻辑
 const handlePwdLogin = async () => {
@@ -212,7 +223,7 @@ const loadQrCode = async () => {
         loginStatus.value = 'failed'
     }
 }
-const isDevelopment = import.meta.env.MODE === 'development'
+
 const connectWebSocket = () => {
     if (!scene.value) return
     if (ws) ws.close()
