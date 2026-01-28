@@ -113,7 +113,11 @@
             </div>
 
             <div class="login-footer">
-                <p v-if="loginMode === 'pwd'">还没有账号？<!--<span class="link">立即注册</span>--><span class="link" @click="loginMode = 'qr'">扫码注册登录</span> <span class="link" @click="gitHubLogin">GitHub登录</span></p>
+                <p v-if="loginMode === 'pwd'">还没有账号？<!--<span class="link">立即注册</span>-->
+                    <span class="link" @click="loginMode = 'qr'">扫码注册登录</span>
+                    <span class="link" @click="gitHubLogin">GitHub登录</span>
+                    <span class="link" @click="giteLogin">Gitee登录</span>
+                </p>
                 <p v-else @click="loginMode = 'pwd'" class="link-switch">使用账号密码登录</p>
             </div>
         </div>
@@ -121,13 +125,14 @@
 </template>
 
 <script setup lang="ts">
-import {ref, reactive, onMounted, onUnmounted} from 'vue'
+import {onMounted, onUnmounted, reactive, ref} from 'vue'
 import axios from 'axios'
-import {ElMessage, ElIcon} from 'element-plus'
+import {ElIcon, ElMessage} from 'element-plus'
 import {Check, Loading, Monitor, Refresh} from '@element-plus/icons-vue'
 import {useUserStore} from '../../stores'
 import {login} from "../../api/user.ts";
-import { useRoute, useRouter } from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
+
 const isDevelopment = import.meta.env.MODE === 'development'
 const route = useRoute()
 const router = useRouter()
@@ -165,6 +170,10 @@ const clientId = isDevelopment ? 'Ov23li0M3hbMSpySq6nT' : 'Ov23li4PvOK3cTnIgni8'
 const gitHubLogin = () => {
     const redirectPath = route.query.redirect as string || '/'
     window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&state=${redirectPath}`;
+};
+
+const giteLogin = () => {
+    window.location.href = isDevelopment ? 'http://localhost:8090/system/gitee' : 'https://www.munjie.com/api/system/gitee';
 };
 
 // 密码登录逻辑
