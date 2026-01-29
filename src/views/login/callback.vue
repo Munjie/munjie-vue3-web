@@ -9,6 +9,7 @@
 import {onMounted} from 'vue';
 import {useRouter} from 'vue-router';
 import {useUserStore} from "../../stores";
+import {ElMessage} from "element-plus";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -25,6 +26,7 @@ const handleLogin = () => {
     const avatar = urlParams.get('avatar');
     const targetPathRaw = urlParams.get('state');
     if (token) {
+        ElMessage.success('登录成功')
         if (typeof username === "string") {
             userStore.setUsername(username)
         }
@@ -35,7 +37,7 @@ const handleLogin = () => {
         }
         let redirectUrl = '/';
         if (targetPathRaw) {
-            router.replace(targetPathRaw);
+            redirectUrl = decodeURIComponent(targetPathRaw)
         }
         router.replace(redirectUrl);
     } else {

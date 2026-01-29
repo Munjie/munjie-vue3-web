@@ -176,7 +176,7 @@ let loginStatus = ref<'loading' | 'waiting' | 'scanned' | 'refreshing' | 'failed
 const loginMode = ref<'qr' | 'pwd'>('qr')
 const isSubmitting = ref(false)
 const rememberMe = ref(true)
-const clientId = isDevelopment ? 'Ov23li0M3hbMSpySq6nT' : 'Ov23li4PvOK3cTnIgni8'
+
 // 账号登录表单
 const loginForm = reactive({
     username: '',
@@ -185,15 +185,12 @@ const loginForm = reactive({
 
 
 
-// 统一跳转处理
+
+
 const handleOAuthLogin = (platform: string) => {
     const redirect = route.query.redirect as string || '/'
-    if ("github" === platform) {
-        window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&state=${redirect}`;
-    }else {
-        window.location.href = isDevelopment ? 'http://localhost:8090/system/gitee' : 'https://www.munjie.com/api/system/gitee';
-    }
-
+    const url = isDevelopment ? 'http://localhost:8090' : 'https://www.munjie.com/api';
+    window.location.href = `${url}/system/auth/${platform}?redirect=${encodeURIComponent(redirect)}`;
 }
 
 const gitHubLogin = () => handleOAuthLogin('github')
@@ -332,9 +329,8 @@ const performLogin = async (token: string, userId: number, username: string, ava
     ElMessage.success('登录成功！')
     // 2. 获取重定向地址
     const redirectPath = route.query.redirect as string || '/'
-
     // 3. 跳转
-    router.replace(redirectPath)
+    await router.replace(redirectPath)
     // await router.push('/')
 }
 
