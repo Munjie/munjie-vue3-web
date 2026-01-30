@@ -18,9 +18,9 @@ export const sendView = (data?: object) => {
 };
 
 
-export const getArticleById = async (id: any): Promise<ArticleVO> => {
+export const getArticleById = async (id: any,userId: any): Promise<ArticleVO> => {
     try {
-        const response = await http.get(`/api/article/get-article-by-id/${id}`);
+        const response = await http.get(`/api/article/get-article-by-id/${id}/${userId}`);
         return response.data;
     } catch (error) {
         console.error(error);

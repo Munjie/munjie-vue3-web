@@ -221,7 +221,7 @@
             </div>
 
             <div class="back-action">
-                <el-button @click="$router.back()" icon="ArrowLeft" round size="large">返回列表</el-button>
+                <el-button @click="$router.push('/')" icon="ArrowLeft" round size="large">返回列表</el-button>
             </div>
         </div>
 
@@ -279,7 +279,8 @@ onMounted(async () => {
     if (!postId) {
         await router.push('/404')
     }
-    post.value = await getArticleById(postId)
+    let userid = userStore.getUserid;
+    post.value = await getArticleById(postId,userid)
     if (post.value === null) {
         await router.push('/404')
         return
