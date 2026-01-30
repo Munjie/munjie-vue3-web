@@ -330,7 +330,7 @@ watch(() => post.value, (newPost) => {
 
 const toggleReply = (item: any) => {
     if (!userStore.getToken) {
-        ElMessage.warning('请登录后再回复')
+        ElMessage.warning('请登录后再回复噢')
         return
     }
     if (replyId.value === item.id) {
@@ -347,7 +347,7 @@ const toggleReply = (item: any) => {
 // 处理文章点赞
 const handlePostLike = async () => {
     if (!userStore.getToken) {
-        ElMessage.warning('登录后即可点赞支持哦')
+        ElMessage.warning('登录后即可点赞支持噢')
         return
     }
     const prevLiked = postLiked.value;
@@ -380,7 +380,7 @@ const handlePostLike = async () => {
 // 处理评论点赞
 const handleCommentLike = async (item: any) => {
     if (!userStore.getToken) {
-        ElMessage.warning('登录后即可点赞评论')
+        ElMessage.warning('登录后即可点赞评论噢')
         return
     }
     const prevLiked = item.isLiked;
@@ -444,7 +444,7 @@ const submitComment = async (parentId: number) => {
 
     try {
         await addComment(contentForm)
-        ElMessage.success('发布成功')
+        ElMessage.success('评论成功,审核后显示')
         // 清空输入
         if (parentId === 0) {
             commentForm.value.content = ''
@@ -454,7 +454,7 @@ const submitComment = async (parentId: number) => {
         }
         await loadComments()
     } catch (err) {
-        ElMessage.error('发布失败')
+        ElMessage.error('评论失败')
     }
 }
 
