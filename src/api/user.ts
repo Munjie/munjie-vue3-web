@@ -6,7 +6,7 @@ import http from './http.ts';
 
 export const updateName = (data?: object) => {
     return http.put(
-        '/api/system/update-name',
+        '/api/user/update-name',
         data
     );
 };

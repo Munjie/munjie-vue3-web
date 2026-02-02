@@ -126,9 +126,9 @@ interface UserInfo {
 }
 
 const user = ref<UserInfo>({
-    username: userStore.getUsername,
-    bio: '',
-    avatar: userStore.getAvatar
+    username: userStore.getUserName(),
+    bio: userStore.getBio(),
+    avatar: userStore.getAvatar(),
 })
 
 const activeField = ref<keyof UserInfo | ''>('')
@@ -172,7 +172,7 @@ const handleUpdatePassword = async () => {
             pwdLoading.value = true
             try {
                 let pwdFor = {
-                    id: userStore.getUserid,
+                    id: userStore.getUserId(),
                     password: pwdForm.value.confirmPassword
                 }
                 await updatePwd(pwdFor)
@@ -200,13 +200,19 @@ const saveField = async (field: keyof UserInfo) => {
     try {
         activeField.value = ''
         let nameForm = {
-            id: userStore.getUserid,
-            userName: user.value[field],
+            id: userStore.getUserId(),
+            userName: user.value.username,
+            bio: user.value.bio,
         }
         const res = await updateName(nameForm);
         if (res.code === 200) {
-            user.value.username = user.value[field];
-            userStore.setUsername(user.value[field]);
+            if (field === 'username') {
+                userStore.setUsername(user.value.username);
+            }
+            if (field === 'bio') {
+                userStore.setBio(user.value.bio);
+            }
+            ElMessage.success('更新成功');
         }
     } catch (e) {
 
@@ -300,14 +306,15 @@ const processImage = (
 const customUpload = async (options: any) => {
     const formData = new FormData()
     formData.append('file', options.file)
-    formData.append('userId', String(userStore.getUserid))
+    formData.append('userId', String(userStore.getUserId()))
     try {
-        const res = await axios.post('/api/system/upload-avatar', formData, {
+        const res = await axios.post('/api/user/upload-avatar', formData, {
             headers: {'Content-Type': 'multipart/form-data'}
         })
         if (res.data.code === 200) {
             user.value.avatar = res.data.data;
             userStore.setAvatar(res.data.data)
+            ElMessage.success('更新成功');
             return res.data.data;
         }
         return userStore.getAvatar;

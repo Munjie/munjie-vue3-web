@@ -51,10 +51,10 @@
                     <router-link to="/about">关于</router-link>
 
                     <div class="user-status-pc">
-                        <template v-if="userStore.ensureToken()">
+                        <template v-if="userStore.getToken()">
                             <el-dropdown trigger="click">
                                 <div class="avatar-wrapper">
-                                    <el-avatar :size="32" class="custom-avatar" :src="userStore.getAva()">
+                                    <el-avatar :size="32" class="custom-avatar" :src="userStore.getAvatar()">
 <!--                                        {{ userStore.getUsername?.charAt(0) || 'U' }}-->
                                     </el-avatar>
                                     <span class="user-name">{{ userStore.getUserName() }}</span>
@@ -103,9 +103,9 @@
                     </template>
 
                     <div class="mobile-menu-wrapper">
-                        <div class="mobile-user-profile" v-if="userStore.ensureToken()">
+                        <div class="mobile-user-profile" v-if="userStore.getToken()">
                             <div class="profile-content">
-                                <el-avatar :size="48" class="premium-avatar" :src="userStore.getAva()">
+                                <el-avatar :size="48" class="premium-avatar" :src="userStore.getAvatar()">
 <!--                                    {{ userStore.getUsername?.charAt(0).toUpperCase() }}-->
                                 </el-avatar>
                                 <div class="user-meta">
@@ -128,7 +128,7 @@
                         </nav>
 
                         <div class="mobile-drawer-footer">
-                            <button v-if="userStore.getToken" class="premium-logout-btn" @click="handleLogout">
+                            <button v-if="userStore.getToken()" class="premium-logout-btn" @click="handleLogout">
                                 <el-icon :size="16"><SwitchButton /></el-icon>
                                 <span>退出登录</span>
                             </button>

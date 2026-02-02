@@ -30,7 +30,7 @@ service.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
         const userStore = useUserStore();
         // 优先从 Pinia 拿 token（），没有再 fallback 到 localStorage
-        let token = userStore.getToken || localStorage.getItem('token') || ''
+        let token = userStore.getToken() || localStorage.getItem('token') || ''
         console.log(config.url)
         if (config.url?.includes('/login') && token) {
             // 防止死循环：阻止继续发 /login 请求

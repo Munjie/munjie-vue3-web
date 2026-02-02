@@ -8,6 +8,7 @@ interface AllDataState {
     avatar: string
     userid: number
     token: string
+    bio: string
     expireAt: number | null
     permissions: any[]
     currentPagePath: string
@@ -23,6 +24,7 @@ function stateIni(): AllDataState {
         avatar: '',
         userid: 0,
         token: '',
+        bio: '',
         expireAt: null,
         permissions: [],
         currentPagePath: '/',
@@ -33,26 +35,6 @@ function stateIni(): AllDataState {
 export const useUserStore = defineStore('useAllData', {
     // 定义状态
     state: stateIni,
-    // 定义 getters
-    getters: {
-        getUsername: (state) => state.username,
-        getAvatar: (state) => state.avatar,
-        getUserid: (state) => state.userid,
-        // getToken: (state) => state.token,
-        getToken: (state) => {
-            if (!state.token) return ''
-            if (state.expireAt && new Date().getTime() > state.expireAt) {
-                // token 已过期：清除并返回空
-                const store = useUserStore()
-                store.resetStore()
-                return ''
-            }
-            return state.token
-        },
-        getPermissions: (state) => state.permissions,
-        getLocale: (state) => state.locale,
-        getCurrentPagePath: (state) => state.currentPagePath,
-    },
     // 定义 actions
     actions: {
         // 设置用户名
@@ -66,10 +48,9 @@ export const useUserStore = defineStore('useAllData', {
         setUserid(userid: number) {
             this.userid = userid
         },
-        // 设置 token
-        /*  setToken(token: string) {
-              this.token = token
-          },*/
+        setBio(bio: string) {
+            this.bio = bio
+        },
         setToken(token: string, expireIn?: number) {
             this.token = token
             if (expireIn) {
@@ -101,13 +82,21 @@ export const useUserStore = defineStore('useAllData', {
             this.resetStore()
             router.push('/')
         },
-        ensureToken() {
+        getToken() {
             if (!this.token) return ''
             if (this.expireAt && Date.now() > this.expireAt) {
                 this.resetStore()
                 return ''
             }
             return this.token
+        },
+        getUserId() {
+            if (!this.userid) return 0
+            if (this.expireAt && Date.now() > this.expireAt) {
+                this.resetStore()
+                return ''
+            }
+            return this.userid
         },
         getUserName() {
             if (!this.username) return ''
@@ -117,13 +106,21 @@ export const useUserStore = defineStore('useAllData', {
             }
             return this.username
         },
-        getAva() {
+        getAvatar() {
             if (!this.avatar) return ''
             if (this.expireAt && Date.now() > this.expireAt) {
                 this.resetStore()
                 return ''
             }
             return this.avatar
+        },
+        getBio() {
+            if (!this.bio) return ''
+            if (this.expireAt && Date.now() > this.expireAt) {
+                this.resetStore()
+                return ''
+            }
+            return this.bio
         }
 
 

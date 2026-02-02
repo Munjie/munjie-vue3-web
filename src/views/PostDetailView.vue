@@ -279,7 +279,7 @@ onMounted(async () => {
     if (!postId) {
         await router.push('/404')
     }
-    let userid = userStore.getUserid;
+    let userid = userStore.getUserId();
     post.value = await getArticleById(postId,userid)
     if (post.value === null) {
         await router.push('/404')
@@ -294,7 +294,7 @@ onMounted(async () => {
 
 
 const isLogin = computed(() => {
-    return !!userStore.ensureToken();
+    return !!userStore.getToken();
 })
 const initObserver = () => {
     const target = document.querySelector('.post-body');
@@ -356,7 +356,7 @@ const handlePostLike = async () => {
     postLikeCount.value += postLiked.value ? 1 : -1;
 
     try {
-        const res = await updateArticleLike(post.value?.id, userStore.getUserid);
+        const res = await updateArticleLike(post.value?.id, userStore.getUserId());
         postLiked.value = res.liked;
         postLikeCount.value = res.likeCount;
 
@@ -389,7 +389,7 @@ const handleCommentLike = async (item: any) => {
     item.likes = (item.likes || 0) + (item.isLiked ? 1 : -1)
     try {
 
-        const res = await updateCommentLike(item.id, userStore.getUserid);
+        const res = await updateCommentLike(item.id, userStore.getUserId());
         item.isLiked = res.liked;
         item.likes = res.likeCount;
 
@@ -413,7 +413,7 @@ const addEmoji = (emoji: string, type: 'main' | 'reply') => {
 const loadComments = async () => {
     commentsLoading.value = true
     setTimeout(async () => {
-        commentList.value = await getComments(post.value?.id, userStore.getUserid)
+        commentList.value = await getComments(post.value?.id, userStore.getUserId())
         commentsLoading.value = false
     }, 500)
 }
@@ -438,7 +438,7 @@ const submitComment = async (parentId: number) => {
         content: content,
         articleId: post.value?.id,
         parentId: parentId,
-        userId: userStore.getUserid,
+        userId: userStore.getUserId(),
         replyTargetId: replyTargetId.value,
     };
 
@@ -463,7 +463,7 @@ const sendViewStat = async () => {
     try {
         let viewForm = {
             articleId: post.value?.id,
-            userId: userStore.getUserid,
+            userId: userStore.getUserId(),
         }
         await sendView(viewForm);
     } catch (err) {
