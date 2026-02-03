@@ -18,213 +18,230 @@
         </div>
 
         <div class="container content-wrapper">
-            <div class="post-body glass-panel">
-                <MdPreview
-                        v-if="contentLoaded"
-                        :modelValue="post.content"
-                        theme="dark"
-                        preview-theme="github"
-                        class="custom-md-preview"
-                />
-
-                <div class="post-tags">
-                    <el-tag v-for="tag in post.tags" :key="tag" round>
-                        # {{ tag }}
-                    </el-tag>
-                </div>
-
-                <div class="post-actions-bar">
-                    <div class="action-item-big" :class="{ 'active': postLiked }" @click="handlePostLike">
-                        <div class="icon-circle">
-                            <span class="custom-icon" v-html="ThumbUpIcon"></span>
-                        </div>
-                        <span class="count">{{ postLikeCount }} 人点赞</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="comment-section glass-panel">
-                <h3 class="section-title">
-                    <el-icon>
-                        <ChatDotRound/>
-                    </el-icon>
-                    评论交流
-                </h3>
-
-                <div class="comment-input-wrapper glass-panel">
-                    <template v-if="isLogin">
-                        <el-input
-                                v-model="commentForm.content"
-                                type="textarea"
-                                :rows="3"
-                                placeholder="说点什么吧..."
-                                maxlength="200"
-                                class="dark-input"
+            <div class="post-layout">
+                <div class="main-content">
+                    <div class="post-body glass-panel">
+                        <MdPreview
+                            v-if="contentLoaded"
+                            :editorId="editorId"
+                            :modelValue="post.content"
+                            theme="dark"
+                            preview-theme="github"
+                            class="custom-md-preview"
                         />
-                        <div class="input-footer">
-                            <el-popover
-                                    placement="top-start"
-                                    :width="300"
-                                    trigger="click"
-                                    popper-class="custom-emoji-box"
-                            >
-                                <template #reference>
-                                    <div class="emoji-trigger-btn">
-                                        <el-icon :size="20">
-                                            <EmojiSmile/>
-                                        </el-icon>
-                                    </div>
-                                </template>
-                                <div class="emoji-scroll-container">
-                                    <div class="emoji-list">
-                <span v-for="emoji in emojiList" :key="emoji" @click="addEmoji(emoji, 'main')">
-                    {{ emoji }}
-                </span>
-                                    </div>
-                                </div>
-                            </el-popover>
-                            <el-button type="primary" round @click="submitComment(0)"
-                                       :disabled="!commentForm.content.trim()">发表评论
-                            </el-button>
+                        <div class="post-tags">
+                            <el-tag v-for="tag in post.tags" :key="tag" round>
+                                # {{ tag }}
+                            </el-tag>
                         </div>
-                    </template>
-                    <div v-else class="login-guide-mask">
-                        <div class="guide-content">
-                            <el-icon class="lock-icon">
-                                <Lock/>
-                            </el-icon>
-                            <span>请先 <router-link :to="`/login?redirect=${route.fullPath}`" class="login-link">登录</router-link> 后评论</span>
+
+                        <div class="post-actions-bar">
+                            <div class="action-item-big" :class="{ 'active': postLiked }" @click="handlePostLike">
+                                <div class="icon-circle">
+                                    <span class="custom-icon" v-html="ThumbUpIcon"></span>
+                                </div>
+                                <span class="count">{{ postLikeCount }} 人点赞</span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                    <div class="comment-section glass-panel">
+                        <h3 class="section-title">
+                            <el-icon>
+                                <ChatDotRound/>
+                            </el-icon>
+                            评论交流
+                        </h3>
 
-                <div class="comment-list" v-loading="commentsLoading">
-                    <div v-for="item in commentList" :key="item.id" class="comment-item">
-                        <el-avatar :size="40" class="user-avatar" :src="item.avatar"></el-avatar>
-                        <div class="comment-content">
-                            <div class="comment-header">
-                                <span class="username">{{ item.username }}</span>
-                                <span class="time">{{ item.createTime }}</span>
-                            </div>
-                            <p class="text">{{ item.content }}</p>
-                            <div class="comment-actions">
-                                  <span class="action-btn like" :class="{ 'is-liked': item.isLiked }"
-                                        @click="handleCommentLike(item)">
-                           <span class="mini-icon" v-html="ThumbUpIcon"></span> {{ item.likes || '赞' }}
-                        </span>
-                                <span class="reply-btn" @click="toggleReply(item)">回复</span>
-                            </div>
-                            <div v-if="replyId === item.id" class="reply-input-wrapper glass-panel">
+                        <div class="comment-input-wrapper glass-panel">
+                            <template v-if="isLogin">
                                 <el-input
-                                        v-model="replyContent"
-                                        type="textarea"
-                                        :rows="2"
-                                        placeholder="写下你的回复..."
-                                        class="dark-input"
-                                        maxlength="100"
+                                    v-model="commentForm.content"
+                                    type="textarea"
+                                    :rows="3"
+                                    placeholder="说点什么吧..."
+                                    maxlength="200"
+                                    class="dark-input"
                                 />
-                                <div class="input-footer mini">
+                                <div class="input-footer">
                                     <el-popover
-                                            placement="top-start"
-                                            :width="280"
-                                            trigger="click"
-                                            popper-class="custom-emoji-box"
+                                        placement="top-start"
+                                        :width="300"
+                                        trigger="click"
+                                        popper-class="custom-emoji-box"
                                     >
                                         <template #reference>
-                                            <div class="emoji-trigger-btn mini">
-                                                <el-icon :size="18">
+                                            <div class="emoji-trigger-btn">
+                                                <el-icon :size="20">
                                                     <EmojiSmile/>
                                                 </el-icon>
                                             </div>
                                         </template>
-                                        <div class="emoji-list">
+                                        <div class="emoji-scroll-container">
+                                            <div class="emoji-list">
+                <span v-for="emoji in emojiList" :key="emoji" @click="addEmoji(emoji, 'main')">
+                    {{ emoji }}
+                </span>
+                                            </div>
+                                        </div>
+                                    </el-popover>
+                                    <el-button type="primary" round @click="submitComment(0)"
+                                               :disabled="!commentForm.content.trim()">发表评论
+                                    </el-button>
+                                </div>
+                            </template>
+                            <div v-else class="login-guide-mask">
+                                <div class="guide-content">
+                                    <el-icon class="lock-icon">
+                                        <Lock/>
+                                    </el-icon>
+                                    <span>请先 <router-link :to="`/login?redirect=${route.fullPath}`" class="login-link">登录</router-link> 后评论</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="comment-list" v-loading="commentsLoading">
+                            <div v-for="item in commentList" :key="item.id" class="comment-item">
+                                <el-avatar :size="40" class="user-avatar" :src="item.avatar"></el-avatar>
+                                <div class="comment-content">
+                                    <div class="comment-header">
+                                        <span class="username">{{ item.username }}</span>
+                                        <span class="time">{{ item.createTime }}</span>
+                                    </div>
+                                    <p class="text">{{ item.content }}</p>
+                                    <div class="comment-actions">
+                                  <span class="action-btn like" :class="{ 'is-liked': item.isLiked }"
+                                        @click="handleCommentLike(item)">
+                           <span class="mini-icon" v-html="ThumbUpIcon"></span> {{ item.likes || '赞' }}
+                        </span>
+                                        <span class="reply-btn" @click="toggleReply(item)">回复</span>
+                                    </div>
+                                    <div v-if="replyId === item.id" class="reply-input-wrapper glass-panel">
+                                        <el-input
+                                            v-model="replyContent"
+                                            type="textarea"
+                                            :rows="2"
+                                            placeholder="写下你的回复..."
+                                            class="dark-input"
+                                            maxlength="100"
+                                        />
+                                        <div class="input-footer mini">
+                                            <el-popover
+                                                placement="top-start"
+                                                :width="280"
+                                                trigger="click"
+                                                popper-class="custom-emoji-box"
+                                            >
+                                                <template #reference>
+                                                    <div class="emoji-trigger-btn mini">
+                                                        <el-icon :size="18">
+                                                            <EmojiSmile/>
+                                                        </el-icon>
+                                                    </div>
+                                                </template>
+                                                <div class="emoji-list">
                 <span v-for="emoji in emojiList" :key="emoji" @click="addEmoji(emoji, 'reply')">
                     {{ emoji }}
                 </span>
-                                        </div>
-                                    </el-popover>
-                                    <div class="right-btns">
-                                        <el-button size="small" link @click="replyId = 0">取消</el-button>
-                                        <el-button
-                                                size="small"
-                                                type="primary"
-                                                round
-                                                @click="submitComment(item.id)"
-                                                :disabled="!replyContent.trim()"
-                                        >发送
-                                        </el-button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div v-if="item.children && item.children.length > 0" class="child-comments">
-                                <div v-for="child in item.children" :key="child.id" class="child-item-wrapper">
-                                    <div class="child-item">
-                                        <el-avatar :size="24" class="child-avatar" :src="child.avatar"></el-avatar>
-                                        <div class="child-info">
-                                            <div class="child-header">
-                                                <span class="child-username">{{ child.username }}</span>
-                                                <span class="child-time">{{ child.createTime }}</span>
+                                                </div>
+                                            </el-popover>
+                                            <div class="right-btns">
+                                                <el-button size="small" link @click="replyId = 0">取消</el-button>
+                                                <el-button
+                                                    size="small"
+                                                    type="primary"
+                                                    round
+                                                    @click="submitComment(item.id)"
+                                                    :disabled="!replyContent.trim()"
+                                                >发送
+                                                </el-button>
                                             </div>
-                                            <p class="child-text">{{ child.content }}</p>
+                                        </div>
+                                    </div>
 
-                                            <div class="child-actions">
+                                    <div v-if="item.children && item.children.length > 0" class="child-comments">
+                                        <div v-for="child in item.children" :key="child.id" class="child-item-wrapper">
+                                            <div class="child-item">
+                                                <el-avatar :size="24" class="child-avatar" :src="child.avatar"></el-avatar>
+                                                <div class="child-info">
+                                                    <div class="child-header">
+                                                        <span class="child-username">{{ child.username }}</span>
+                                                        <span class="child-time">{{ child.createTime }}</span>
+                                                    </div>
+                                                    <p class="child-text">{{ child.content }}</p>
+
+                                                    <div class="child-actions">
                     <span class="action-btn like"
                           :class="{ 'is-liked': child.isLiked }"
                           @click="handleCommentLike(child)">
                         <span class="mini-icon" v-html="ThumbUpIcon"></span>
                         {{ child.likes || '赞' }}
                     </span>
-                                                <span class="action-btn reply" @click="toggleReply(child)">回复</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div v-if="replyId === child.id" class="reply-input-wrapper child-reply-box">
-                                        <el-input
-                                                v-model="replyContent"
-                                                type="textarea"
-                                                :rows="2"
-                                                :placeholder="`回复 @${replyTargetName}`"
-                                                class="dark-input"
-                                        />
-                                        <div class="input-footer mini">
-                                            <el-popover popper-class="emoji-popover" trigger="click" :width="280">
-                                                <template #reference>
-                                                    <div class="emoji-trigger-btn mini">
-                                                        <el-icon :size="16">
-                                                            <EmojiSmile/>
-                                                        </el-icon>
+                                                        <span class="action-btn reply" @click="toggleReply(child)">回复</span>
                                                     </div>
-                                                </template>
-                                                <div class="emoji-list">
+                                                </div>
+                                            </div>
+
+                                            <div v-if="replyId === child.id" class="reply-input-wrapper child-reply-box">
+                                                <el-input
+                                                    v-model="replyContent"
+                                                    type="textarea"
+                                                    :rows="2"
+                                                    :placeholder="`回复 @${replyTargetName}`"
+                                                    class="dark-input"
+                                                />
+                                                <div class="input-footer mini">
+                                                    <el-popover popper-class="emoji-popover" trigger="click" :width="280">
+                                                        <template #reference>
+                                                            <div class="emoji-trigger-btn mini">
+                                                                <el-icon :size="16">
+                                                                    <EmojiSmile/>
+                                                                </el-icon>
+                                                            </div>
+                                                        </template>
+                                                        <div class="emoji-list">
                                                     <span v-for="emoji in emojiList" :key="emoji"
                                                           @click="addEmoji(emoji, 'reply')">{{ emoji }}</span>
+                                                        </div>
+                                                    </el-popover>
+                                                    <div class="right-btns">
+                                                        <el-button size="small" link @click="replyId = 0">取消</el-button>
+                                                        <el-button size="small" type="primary" round
+                                                                   :disabled="!replyContent.trim()"
+                                                                   @click="submitComment(item.id)">发送
+                                                        </el-button>
+                                                    </div>
                                                 </div>
-                                            </el-popover>
-                                            <div class="right-btns">
-                                                <el-button size="small" link @click="replyId = 0">取消</el-button>
-                                                <el-button size="small" type="primary" round
-                                                           :disabled="!replyContent.trim()"
-                                                           @click="submitComment(item.id)">发送
-                                                </el-button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            <el-empty v-if="commentList.length === 0" description="暂无评论" :image-size="40"
+                                      style="padding: 1px 0;"/>
                         </div>
                     </div>
-                    <el-empty v-if="commentList.length === 0" description="暂无评论" :image-size="40"
-                              style="padding: 1px 0;"/>
-                </div>
-            </div>
 
-            <div class="back-action">
-                <el-button @click="$router.push('/')" icon="ArrowLeft" round size="large">返回列表</el-button>
+                    <div class="back-action">
+                        <el-button @click="$router.push('/')" icon="ArrowLeft" round size="large">返回列表</el-button>
+                    </div>
+
+                </div>
+
+                <aside class="sidebar">
+                    <div class="toc-card glass-panel">
+                        <div class="toc-header">
+                            <el-icon><List /></el-icon> 目录
+                        </div>
+                        <MdCatalog
+                            :editorId="editorId"
+                            :scrollElement="scrollElement"
+                            theme="dark"
+                            class="custom-catalog"
+                        />
+                    </div>
+                </aside>
             </div>
         </div>
-
         <el-backtop :right="40" :bottom="40"/>
     </div>
 </template>
@@ -232,7 +249,7 @@
 <script setup lang="ts">
 import {ref, onMounted, watch, nextTick, onUnmounted} from 'vue'
 import {useRoute} from 'vue-router'
-import {MdPreview} from 'md-editor-v3'
+import {MdPreview,MdCatalog} from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
 import {getArticleById, sendView} from "../api/article.ts";
 import type {ArticleVO} from "../types/article.ts";
@@ -240,10 +257,15 @@ import router from "../router";
 import {ElMessage} from "element-plus";
 import {useUserStore} from '../stores'
 import {getComments, addComment, updateArticleLike, updateCommentLike} from "../api/comment.ts"
-import {ChatDotRound, Calendar, View, Lock} from '@element-plus/icons-vue'
+import {ChatDotRound, Calendar, View, Lock, List} from '@element-plus/icons-vue'
 import EmojiSmile from '../components/icons/SmilSvg.vue'
 import {computed} from 'vue'
 
+
+
+// --- 在 script setup 中添加 ---
+const editorId = 'preview-only'; // 关联 ID
+const scrollElement = document.documentElement; // 指定滚动容器为整个页面
 
 
 const ThumbUpIcon = `
@@ -496,11 +518,11 @@ onUnmounted(() => {
   }
 }
 
-.container {
+/*.container {
   width: 90%;
   max-width: 900px; // 详情页窄一些，方便阅读
   margin: 0 auto;
-}
+}*/
 
 .post-title {
   font-size: 2.8rem;
@@ -1274,6 +1296,103 @@ onUnmounted(() => {
     min-height: 60px !important;
     font-size: 0.9rem !important;
   }
+}
+
+/* 1. 修改容器宽度 */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 2. 新增 Grid 布局 */
+.post-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px; // 左侧自适应，右侧固定 280px
+    gap: 20px;
+    align-items: start; // 防止侧边栏被拉伸
+    position: relative;
+}
+
+/* 3. 针对移动端的适配 (隐藏目录) */
+@media (max-width: 960px) {
+    .post-layout {
+        grid-template-columns: 1fr; // 变为单列
+    }
+    .sidebar {
+        display: none; // 移动端隐藏目录
+    }
+}
+
+/* 4. 侧边栏样式 */
+.sidebar {
+    position: sticky;
+    top: 100px;
+
+    .toc-card {
+        padding: 20px;
+        border-radius: 12px;
+        max-height: calc(100vh - 40px); // 防止目录太长溢出屏幕
+        overflow-y: auto; // 目录过长时内部滚动
+
+        /* 隐藏滚动条但保留功能 */
+        &::-webkit-scrollbar {
+            width: 0;
+        }
+
+        .toc-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+    }
+}
+
+
+:deep(.custom-catalog) {
+    .md-editor-catalog-link {
+        color: var(--text-secondary);
+        padding: 10px 12px;      /* 1. 增加上下内边距 (原 6px -> 10px) */
+        margin-bottom: 4px;      /* 2. 增加每个条目之间的空隙 */
+        line-height: 1.6;        /* 3. 稍微增加行高，防止文字换行时挤在一起 */
+        border-radius: 8px;      /* 稍微加大圆角，因为条目变高了 */
+        font-size: 0.95rem;      /* 字体可以微调大一点点 */
+
+        transition: all 0.2s;
+        cursor: pointer;
+
+        &:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+    }
+
+
+    .md-editor-catalog-link-h2 {
+        padding-left: 25px !important; /* 增加缩进，层级感更强 */
+    }
+    .md-editor-catalog-link-h3 {
+        padding-left: 40px !important;
+    }
+
+    // 当前激活的目录项
+    .md-editor-catalog-active > span {
+        color: var(--accent-color);
+        font-weight: bold;
+        background: rgba(99, 102, 241, 0.1); // 使用紫色的淡背景
+        border-left: 3px solid var(--accent-color);
+    }
+
+    // 去除默认的小圆点
+    .md-editor-catalog-indicator {
+        display: none;
+    }
 }
 </style>
 
