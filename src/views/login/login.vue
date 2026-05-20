@@ -164,7 +164,7 @@ import axios from 'axios'
 import {ElIcon, ElMessage} from 'element-plus'
 import {Back, Check, Loading, Monitor, Refresh} from '@element-plus/icons-vue'
 import {useUserStore} from '../../stores'
-import {login} from "../../api/user.ts";
+import {login} from "../../api/login.ts";
 import {useRoute, useRouter} from 'vue-router'
 
 const isDevelopment = import.meta.env.MODE === 'development'
@@ -181,14 +181,11 @@ const loginMode = ref<'qr' | 'pwd'>('qr')
 const isSubmitting = ref(false)
 const rememberMe = ref(true)
 
-// 账号登录表单
-const loginForm = reactive({
+
+const loginForm = ref({
     username: '',
     password: ''
-})
-
-
-
+});
 
 
 const handleOAuthLogin = (platform: string) => {
@@ -239,12 +236,12 @@ watch(() => route.query.error, () => {
 
 // 密码登录逻辑
 const handlePwdLogin = async () => {
-    if (!loginForm.username || !loginForm.password) {
+    if (!loginForm.value.username || !loginForm.value.password) {
         return ElMessage.warning('请填写完整的登录信息')
     }
     isSubmitting.value = true
     try {
-        const res = (await login(loginForm)).data;
+        const res = (await login(loginForm.value)).data;
         await performLogin(res.token, res.userId, res.userName, res.avatar,res.expire)
     } finally {
         isSubmitting.value = false
@@ -272,7 +269,7 @@ const refreshQr = () => {
 const loadQrCode = async () => {
     loginStatus.value = 'loading'
     try {
-        const response = await axios.get('/api/wechat/qr', {responseType: 'blob'})
+        const response = await axios.get('/api/auth/qr', {responseType: 'blob'})
         if (response.status !== 200) {
             ElMessage.error('服务器错误')
             return

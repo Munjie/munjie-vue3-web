@@ -12,12 +12,7 @@ export const updateName = (data?: object) => {
 };
 
 
-export const login = (data?: object) => {
-    return http.post(
-        '/api/user/login',
-        data
-    );
-};
+
 
 export const updatePwd = (data?: object) => {
     return http.put(
